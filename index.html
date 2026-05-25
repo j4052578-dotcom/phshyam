@@ -1,124 +1,274 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cosmic Streamer</title>
-    <style>
-        :root {
-            --space-bg: #0b0e14;
-            --neon-blue: #6366f1;
-            --neon-glow: rgba(99, 102, 241, 0.5);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stream Player</title>
 
-        body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle at center, #1e293b 0%, #0b0e14 100%);
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
-        }
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Inter, system-ui, sans-serif;
+    }
 
-        /* Starfield effect */
-        body::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(white, transparent 1px) 0 0/50px 50px;
-            opacity: 0.1;
-            animation: twinkle 4s infinite alternate;
-        }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(255,145,0,0.08), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(255,102,0,0.06), transparent 35%),
+        #0b0b0b;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
 
-        @keyframes twinkle { from { opacity: 0.1; } to { opacity: 0.3; } }
+    .container {
+      width: 100%;
+      max-width: 950px;
+      background: rgba(20,20,20,0.95);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow:
+        0 20px 50px rgba(0,0,0,0.5),
+        0 0 80px rgba(255,145,0,0.08);
+      backdrop-filter: blur(16px);
+    }
 
-        .container {
-            width: 90%;
-            max-width: 500px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
-            padding: 2rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            z-index: 1;
-            text-align: center;
-        }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
 
-        h1 { margin-bottom: 1.5rem; letter-spacing: 2px; text-transform: uppercase; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+    .logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #ff9000, #ff5100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: black;
+      box-shadow: 0 0 25px rgba(255,140,0,0.4);
+    }
 
-        input {
-            width: 100%;
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--neon-blue);
-            border-radius: 10px;
-            color: white;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
+    .branding h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
 
-        button {
-            width: 100%;
-            padding: 15px;
-            background: var(--neon-blue);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
+    .branding p {
+      color: #9a9a9a;
+      font-size: 0.92rem;
+      margin-top: 2px;
+    }
 
-        button:hover { box-shadow: 0 0 15px var(--neon-blue); }
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
 
-        video {
-            width: 100%;
-            margin-top: 20px;
-            border-radius: 10px;
-            display: none;
-            border: 1px solid var(--neon-blue);
-        }
+    .controls input {
+      flex: 1;
+      min-width: 0;
+      background: #161616;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: white;
+      padding: 16px 18px;
+      border-radius: 16px;
+      outline: none;
+      transition: 0.2s ease;
+      font-size: 15px;
+    }
 
-        #status { margin-top: 15px; font-size: 0.8rem; color: #94a3b8; }
-    </style>
+    .controls input:focus {
+      border-color: #ff9000;
+      box-shadow: 0 0 0 4px rgba(255,144,0,0.12);
+    }
+
+    .controls button {
+      border: none;
+      background: linear-gradient(135deg, #ff9000, #ff5e00);
+      color: black;
+      font-weight: 700;
+      padding: 16px 24px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-size: 15px;
+      min-width: 130px;
+    }
+
+    .controls button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(255,140,0,0.28);
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      border-radius: 24px;
+      overflow: hidden;
+      background: black;
+      border: 1px solid rgba(255,255,255,0.06);
+      aspect-ratio: 16 / 9;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: black;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      pointer-events: none;
+      font-size: 15px;
+      letter-spacing: 0.2px;
+      background:
+        linear-gradient(to bottom,
+        rgba(0,0,0,0.15),
+        rgba(0,0,0,0.4));
+    }
+
+    .status {
+      margin-top: 14px;
+      color: #b0b0b0;
+      font-size: 14px;
+      padding-left: 4px;
+    }
+
+    @media (max-width: 720px) {
+      .container {
+        padding: 18px;
+        border-radius: 22px;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      .controls button {
+        width: 100%;
+      }
+
+      .branding h1 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>Cosmic Stream</h1>
-    <input type="text" id="urlInput" placeholder="Enter warp destination URL...">
-    <button onclick="streamVideo()">Initialize Stream</button>
-    <div id="status"></div>
-    <video id="videoPlayer" controls></video>
-</div>
+  <div class="container">
 
-<script>
-    function streamVideo() {
-        const input = document.getElementById('urlInput').value;
-        const video = document.getElementById('videoPlayer');
-        const status = document.getElementById('status');
-        
-        if (!input) return alert('Coordinates required!');
+    <div class="topbar">
+      <div class="logo">P</div>
 
-        status.innerText = 'Engaging warp drive...';
-        video.style.display = 'none';
+      <div class="branding">
+        <h1>Premium Stream</h1>
+        <p>Fast elegant media playback</p>
+      </div>
+    </div>
 
-        try {
-            const encodedUrl = btoa(input);
-            video.src = `https://phubshit.onrender.com/get?url=${encodedUrl}`;
-            video.style.display = 'block';
-            video.play();
-            status.innerText = 'Stream stabilized.';
-        } catch (err) {
-            status.innerText = 'Navigation error: Could not reach endpoint.';
-        }
+    <div class="controls">
+      <input
+        id="urlInput"
+        type="text"
+        placeholder="Paste video URL here..."
+      />
+
+      <button onclick="playVideo()">
+        Play Video
+      </button>
+    </div>
+
+    <div class="video-wrapper">
+      <video id="player" controls playsinline></video>
+
+      <div class="overlay" id="overlay">
+        Waiting for stream...
+      </div>
+    </div>
+
+    <div class="status" id="status">
+      Idle
+    </div>
+
+  </div>
+
+  <script>
+    const player = document.getElementById("player");
+    const overlay = document.getElementById("overlay");
+    const statusText = document.getElementById("status");
+
+    function playVideo() {
+      const input = document.getElementById("urlInput").value.trim();
+
+      if (!input) {
+        statusText.innerText = "Please enter a valid URL.";
+        return;
+      }
+
+      try {
+        const encoded = btoa(input);
+
+        const endpoint =
+          `https://phubshit.onrender.com/get?url=${encoded}`;
+
+        statusText.innerText = "Connecting to stream...";
+        overlay.style.display = "none";
+
+        player.src = endpoint;
+
+        player.play()
+          .then(() => {
+            statusText.innerText = "Streaming video.";
+          })
+          .catch(err => {
+            console.error(err);
+            statusText.innerText = "Playback blocked. Tap play manually.";
+          });
+
+      } catch (err) {
+        console.error(err);
+        statusText.innerText = "Encoding failed.";
+      }
     }
-</script>
+
+    player.addEventListener("waiting", () => {
+      statusText.innerText = "Buffering...";
+    });
+
+    player.addEventListener("playing", () => {
+      statusText.innerText = "Now playing.";
+    });
+
+    player.addEventListener("error", () => {
+      statusText.innerText = "Failed to load stream.";
+      overlay.style.display = "flex";
+      overlay.innerText = "Unable to play video.";
+    });
+  </script>
 
 </body>
 </html>
