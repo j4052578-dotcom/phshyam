@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Streamer</title>
+    <style>
+        :root {
+            --space-bg: #0b0e14;
+            --neon-blue: #6366f1;
+            --neon-glow: rgba(99, 102, 241, 0.5);
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #1e293b 0%, #0b0e14 100%);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Starfield effect */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(white, transparent 1px) 0 0/50px 50px;
+            opacity: 0.1;
+            animation: twinkle 4s infinite alternate;
+        }
+
+        @keyframes twinkle { from { opacity: 0.1; } to { opacity: 0.3; } }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 1;
+            text-align: center;
+        }
+
+        h1 { margin-bottom: 1.5rem; letter-spacing: 2px; text-transform: uppercase; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--neon-blue);
+            border-radius: 10px;
+            color: white;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--neon-blue);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:hover { box-shadow: 0 0 15px var(--neon-blue); }
+
+        video {
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 10px;
+            display: none;
+            border: 1px solid var(--neon-blue);
+        }
+
+        #status { margin-top: 15px; font-size: 0.8rem; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Cosmic Stream</h1>
+    <input type="text" id="urlInput" placeholder="Enter warp destination URL...">
+    <button onclick="streamVideo()">Initialize Stream</button>
+    <div id="status"></div>
+    <video id="videoPlayer" controls></video>
+</div>
+
+<script>
+    function streamVideo() {
+        const input = document.getElementById('urlInput').value;
+        const video = document.getElementById('videoPlayer');
+        const status = document.getElementById('status');
+        
+        if (!input) return alert('Coordinates required!');
+
+        status.innerText = 'Engaging warp drive...';
+        video.style.display = 'none';
+
+        try {
+            const encodedUrl = btoa(input);
+            video.src = `https://phubshit.onrender.com/get?url=${encodedUrl}`;
+            video.style.display = 'block';
+            video.play();
+            status.innerText = 'Stream stabilized.';
+        } catch (err) {
+            status.innerText = 'Navigation error: Could not reach endpoint.';
+        }
+    }
+</script>
+
+</body>
+</html>
