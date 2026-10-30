@@ -395,6 +395,13 @@
                 <!-- Video Cards render dynamically -->
             </div>
 
+            <!-- INFINITE SCROLL LOADER & SENTINEL -->
+            <div id="infiniteLoader" class="hidden flex flex-col items-center justify-center py-8 space-y-3">
+                <div class="w-8 h-8 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin"></div>
+                <span class="text-xs text-gray-400 font-mono tracking-wider">Loading more videos...</span>
+            </div>
+            <div id="scrollSentinel" class="h-10 w-full opacity-0 pointer-events-none"></div>
+
             <!-- EMPTY STATE UI -->
             <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-center space-y-4">
                 <div class="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl text-gray-500">
@@ -566,7 +573,66 @@
             tagFilter: null,
             searchTimeout: null,
             isCinemaMode: false,
-            hlsInstance: null
+            hlsInstance: null,
+            currentPage: 1,
+            isLoadingMore: false,
+            hasMore: true
+        };
+
+        // DOM Element Cache
+        const elements = {
+            videoGrid: document.getElementById('videoGrid'),
+            skeletonGrid: document.getElementById('skeletonGrid'),
+            emptyState: document.getElementById('emptyState'),
+            errorState: document.getElementById('errorState'),
+            heroBanner: document.getElementById('heroBanner'),
+            heroImage: document.getElementById('heroImage'),
+            heroTitle: document.getElementById('heroTitle'),
+            heroAuthor: document.getElementById('heroAuthor'),
+            heroViews: document.getElementById('heroViews'),
+            heroRuntime: document.getElementById('heroRuntime'),
+            heroPlayBtn: document.getElementById('heroPlayBtn'),
+            heroSaveBtn: document.getElementById('heroSaveBtn'),
+            searchInput: document.getElementById('searchInput'),
+            mobileSearchInput: document.getElementById('mobileSearchInput'),
+            clearSearchBtn: document.getElementById('clearSearchBtn'),
+            searchBanner: document.getElementById('searchBanner'),
+            searchQueryText: document.getElementById('searchQueryText'),
+            resetSearchBtn: document.getElementById('resetSearchBtn'),
+            viewHeading: document.getElementById('viewHeading'),
+            videoCountBadge: document.getElementById('videoCountBadge'),
+            watchlistCount: document.getElementById('watchlistCount'),
+            historyCount: document.getElementById('historyCount'),
+            playerModal: document.getElementById('playerModal'),
+            mainVideoPlayer: document.getElementById('mainVideoPlayer'),
+            playerVideoTitle: document.getElementById('playerVideoTitle'),
+            playerModalTitle: document.getElementById('playerModalTitle'),
+            playerAuthorText: document.getElementById('playerAuthorText'),
+            playerViews: document.getElementById('playerViews'),
+            playerKeyBadge: document.getElementById('playerKeyBadge'),
+            qualityMenuBtn: document.getElementById('qualityMenuBtn'),
+            qualityDropdown: document.getElementById('qualityDropdown'),
+            qualityListContainer: document.getElementById('qualityListContainer'),
+            currentQualityLabel: document.getElementById('currentQualityLabel'),
+            relatedVideosQueue: document.getElementById('relatedVideosQueue'),
+            modalSaveBtn: document.getElementById('modalSaveBtn'),
+            modalSaveText: document.getElementById('modalSaveText'),
+            modalShareBtn: document.getElementById('modalShareBtn'),
+            closePlayerModalBtn: document.getElementById('closePlayerModalBtn'),
+            cinemaToggleBtn: document.getElementById('cinemaToggleBtn'),
+            playerContainerCol: document.getElementById('playerContainerCol'),
+            sidebar: document.getElementById('sidebar'),
+            sidebarBackdrop: document.getElementById('sidebarBackdrop'),
+            mobileMenuBtn: document.getElementById('mobileMenuBtn'),
+            mobileSearchToggle: document.getElementById('mobileSearchToggle'),
+            mobileSearchOverlay: document.getElementById('mobileSearchOverlay'),
+            closeMobileSearch: document.getElementById('closeMobileSearch'),
+            retryApiBtn: document.getElementById('retryApiBtn'),
+            apiStatusBadge: document.getElementById('apiStatusBadge'),
+            statusText: document.getElementById('statusText'),
+            toastContainer: document.getElementById('toastContainer'),
+            infiniteLoader: document.getElementById('infiniteLoader'),
+            scrollSentinel: document.getElementById('scrollSentinel')
         };
 
         // DOM Element Cache
@@ -645,105 +711,71 @@
             let binary = '';
             for (let i = 0; i < utf8Bytes.length; i++) {
                 binary += String.fromCharCode(utf8Bytes[i]);
+        async function fetchHomepage(page = 1, append = false) {
+            if (state.isLoadingMore) return;
+
+            if (!append) {
+                state.currentPage = 1;
+                state.hasMore = true;
+                state.videos = [];
+                showSkeletons(true);
+            } else {
+                state.isLoadingMore = true;
+                elements.infiniteLoader.classList.remove('hidden');
             }
-            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        }
 
-        // Utility: Format Shorthand View Numbers
-        function formatViews(num) {
-            if (!num && num !== 0) return '0 views';
-            if (typeof num === 'string') return num.includes('views') ? num : `${num} views`;
-            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M views';
-            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K views';
-            return num + ' views';
-        }
-
-        // Utility: Toast Notifications
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            const icons = {
-                success: 'fa-circle-check text-emerald-400',
-                error: 'fa-circle-xmark text-rose-400',
-                info: 'fa-circle-info text-sky-400'
-            };
-
-            toast.className = `pointer-events-auto flex items-center space-x-3 px-4 py-3 rounded-2xl glass-modal border border-white/10 shadow-2xl transform transition-all duration-300 translate-y-4 opacity-0 text-xs font-semibold text-white`;
-            toast.innerHTML = `
-                <i class="fa-solid ${icons[type] || icons.info} text-base"></i>
-                <span>${message}</span>
-            `;
-
-            elements.toastContainer.appendChild(toast);
-
-            // Animate In
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-4', 'opacity-0');
-            });
-
-            // Auto Remove after 3s
-            setTimeout(() => {
-                toast.classList.add('translate-y-4', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // Save State to LocalStorage
-        function syncLocalStorage() {
-            localStorage.setItem(STORAGE_WATCHLIST, JSON.stringify(state.watchlist));
-            localStorage.setItem(STORAGE_HISTORY, JSON.stringify(state.history));
-            updateCounters();
-        }
-
-        function updateCounters() {
-            elements.watchlistCount.textContent = state.watchlist.length;
-            elements.historyCount.textContent = state.history.length;
-        }
-
-        // API Client Functions
-        async function checkApiHealth() {
-            try {
-                const res = await fetch(`${API_BASE}/health`, { cache: 'no-store' });
-                if (res.ok) {
-                    elements.statusText.textContent = 'CONNECTED';
-                    elements.apiStatusBadge.className = 'hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium';
-                    return true;
-                }
-            } catch (e) {
-                console.warn('Health check warning:', e);
-            }
-            elements.statusText.textContent = 'EDGE ONLINE';
-            return true;
-        }
-
-        async function fetchHomepage() {
-            showSkeletons(true);
             hideErrors();
             try {
-                const res = await fetch(`${API_BASE}/get_homepage`);
+                const res = await fetch(`${API_BASE}/homepage?page=${page}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 
-                if (data && Array.isArray(data.results)) {
-                    state.videos = data.results;
-                    renderView();
+                const newVideos = (data && Array.isArray(data.results)) ? data.results : [];
+
+                if (newVideos.length === 0) {
+                    state.hasMore = false;
                 } else {
-                    throw new Error('Invalid JSON format returned from server');
+                    if (append) {
+                        state.videos = [...state.videos, ...newVideos];
+                    } else {
+                        state.videos = newVideos;
+                    }
+                    state.currentPage = page;
                 }
+
+                renderView();
             } catch (err) {
                 console.error('Error fetching homepage:', err);
-                showErrorState('Failed to connect to API worker. Please check your internet connection or endpoint status.');
+                if (!append) {
+                    showErrorState('Failed to connect to API worker. Please check your internet connection or endpoint status.');
+                } else {
+                    showToast('Failed to load more videos.', 'error');
+                }
             } finally {
                 showSkeletons(false);
+                state.isLoadingMore = false;
+                elements.infiniteLoader.classList.add('hidden');
             }
         }
 
-        async function searchVideos(query) {
+        async function searchVideos(query, page = 1, append = false) {
             if (!query || !query.trim()) {
-                fetchHomepage();
+                fetchHomepage(1, false);
                 return;
             }
 
-            showSkeletons(true);
+            if (state.isLoadingMore) return;
+
+            if (!append) {
+                state.currentPage = 1;
+                state.hasMore = true;
+                state.videos = [];
+                showSkeletons(true);
+            } else {
+                state.isLoadingMore = true;
+                elements.infiniteLoader.classList.remove('hidden');
+            }
+
             hideErrors();
             state.view = 'search';
             state.searchQuery = query.trim();
@@ -751,22 +783,56 @@
 
             try {
                 const encoded = await encodeQuery(query.trim());
-                const res = await fetch(`${API_BASE}/search?q=${encoded}`);
+                const res = await fetch(`${API_BASE}/search?q=${encoded}&page=${page}`);
                 if (!res.ok) throw new Error(`Search error ${res.status}`);
                 const data = await res.json();
 
-                if (data && Array.isArray(data.results)) {
-                    state.videos = data.results;
-                    renderView();
+                const newVideos = (data && Array.isArray(data.results)) ? data.results : [];
+
+                if (newVideos.length === 0) {
+                    state.hasMore = false;
                 } else {
-                    state.videos = [];
-                    renderView();
+                    if (append) {
+                        state.videos = [...state.videos, ...newVideos];
+                    } else {
+                        state.videos = newVideos;
+                    }
+                    state.currentPage = page;
                 }
+
+                renderView();
             } catch (err) {
                 console.error('Error searching videos:', err);
-                showErrorState('Search request failed. Please try a different query.');
+                if (!append) {
+                    showErrorState('Search request failed. Please try a different query.');
+                } else {
+                    showToast('Failed to load more search results.', 'error');
+                }
             } finally {
                 showSkeletons(false);
+                state.isLoadingMore = false;
+                elements.infiniteLoader.classList.add('hidden');
+            }
+        }
+
+        function setupInfiniteScroll() {
+            const observer = new IntersectionObserver((entries) => {
+                const target = entries[0];
+                if (target.isIntersecting && !state.isLoadingMore && state.hasMore) {
+                    if (state.view === 'home' || state.view === 'trending') {
+                        fetchHomepage(state.currentPage + 1, true);
+                    } else if (state.view === 'search' && state.searchQuery) {
+                        searchVideos(state.searchQuery, state.currentPage + 1, true);
+                    }
+                }
+            }, {
+                root: document.querySelector('main'),
+                rootMargin: '300px',
+                threshold: 0.1
+            });
+
+            if (elements.scrollSentinel) {
+                observer.observe(elements.scrollSentinel);
             }
         }
 
@@ -1358,7 +1424,7 @@
             state.searchQuery = '';
             elements.searchInput.value = '';
             updateNavActiveState();
-            fetchHomepage();
+            fetchHomepage(1, false);
         });
 
         // Spotlight Hero Play & Save Buttons
@@ -1475,14 +1541,15 @@
         });
 
         elements.retryApiBtn.addEventListener('click', () => {
-            fetchHomepage();
+            fetchHomepage(1, false);
         });
 
         // INITIALIZATION
         window.addEventListener('DOMContentLoaded', async () => {
             updateCounters();
+            setupInfiniteScroll();
             await checkApiHealth();
-            fetchHomepage();
+            fetchHomepage(1, false);
         });
     </script>
 </body>
