@@ -176,10 +176,10 @@
                 <div class="absolute left-4 text-gray-400 pointer-events-none">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </div>
-                <input
-                    type="text"
+                <input 
+                    type="text" 
                     id="searchInput"
-                    placeholder="Search thousands of videos, creators, streams... (Press '/' to focus)"
+                    placeholder="Search thousands of videos, creators, streams... (Press '/' to focus)" 
                     class="w-full bg-card/80 border border-white/10 rounded-2xl pl-11 pr-24 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/20 transition-all shadow-inner"
                 >
                 <div class="absolute right-3 flex items-center space-x-2">
@@ -221,10 +221,10 @@
     <!-- MOBILE SEARCH BAR OVERLAY -->
     <div id="mobileSearchOverlay" class="hidden md:hidden p-4 glass-nav border-b border-white/10 space-y-2">
         <div class="relative flex items-center">
-            <input
-                type="text"
+            <input 
+                type="text" 
                 id="mobileSearchInput"
-                placeholder="Search videos..."
+                placeholder="Search videos..." 
                 class="w-full bg-card border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-brand-500"
             >
             <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-400"></i>
@@ -298,7 +298,7 @@
             <section id="heroBanner" class="relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-6 md:p-10 transition-all duration-500 hidden">
                 <div class="absolute inset-0 bg-gradient-to-r from-oled via-oled/80 to-transparent z-10"></div>
                 <img id="heroImage" src="" alt="Spotlight" class="absolute inset-0 w-full h-full object-cover opacity-30 filter blur-sm">
-
+                
                 <div class="relative z-20 max-w-2xl space-y-4">
                     <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/20 border border-brand-500/40 text-brand-400 text-xs font-semibold uppercase tracking-wider">
                         <i class="fa-solid fa-fire animate-pulse"></i>
@@ -438,7 +438,7 @@
 
     <!-- VIDEO PLAYER MODAL / THEATER OVERLAY -->
     <div id="playerModal" class="fixed inset-0 z-50 glass-modal flex flex-col hidden overflow-y-auto transition-opacity duration-300">
-
+        
         <!-- Player Modal Header Bar -->
         <div class="sticky top-0 z-10 glass-nav px-4 lg:px-8 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3 overflow-hidden">
@@ -463,10 +463,10 @@
 
         <!-- Player Body Layout -->
         <div class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+            
             <!-- Left & Main: Video Frame & Metadata (Cols 2) -->
             <div id="playerContainerCol" class="lg:col-span-2 space-y-6">
-
+                
                 <!-- Video Player Container Box -->
                 <div class="relative bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
                     <div class="video-container">
@@ -917,7 +917,6 @@
             const videoKey = card.dataset.key;
             if (!videoKey) return;
 
-            // Stop any existing active card preview
             stopCardPreview();
 
             activePreviewCard = card;
@@ -985,7 +984,7 @@
                         if (badgeEl) badgeEl.classList.remove('hidden');
                     }).catch(e => console.log('Preview playback blocked:', e));
                 }
-            }, 180); // 180ms hover threshold
+            }, 180);
         }
 
         function stopCardPreview() {
@@ -1152,9 +1151,9 @@
                 <div class="video-card group glass-panel rounded-2xl overflow-hidden border border-white/5 hover:border-brand-500/40 transition-all duration-300 flex flex-col cursor-pointer glow-hover" data-key="${video.videoKey}">
                     <!-- Thumbnail Container -->
                     <div class="relative aspect-video w-full overflow-hidden bg-black/40">
-                        <img
-                            src="${thumbnail}"
-                            alt="${escapeHtml(video.title || '')}"
+                        <img 
+                            src="${thumbnail}" 
+                            alt="${escapeHtml(video.title || '')}" 
                             class="card-thumb-img w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                             loading="lazy"
                             onerror="this.onerror=null; this.src='https://placehold.co/600x400/0f1118/ffffff?text=Nexus+Stream';"
