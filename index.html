@@ -1,1162 +1,1489 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>GET THE RANCH</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@0.14.17/dist/hls.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS PLAY - Next-Gen Video Platform</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Hls.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        oled: '#06070a',
+                        card: '#0f1118',
+                        'card-hover': '#161925',
+                        brand: {
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            glow: '#ff2a5f'
+                        },
+                        violet: {
+                            glow: '#8b5cf6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* ---------- RESET & BASE ---------- */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-        }
-
-        :root {
-            --bg-primary: #0b0b0b;
-            --bg-secondary: #161616;
-            --bg-card: #1e1e1e;
-            --bg-input: #2a2a2a;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --text-muted: #6b6b6b;
-            --accent: #f85a3e;
-            --accent-hover: #ff6f55;
-            --border-color: #333333;
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
-            --radius: 14px;
-            --radius-sm: 8px;
-            --transition: 0.25s ease;
-        }
-
-        html {
-            font-size: 16px;
-            -webkit-tap-highlight-color: transparent;
-        }
-
         body {
-            font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
+            background-color: #06070a;
+            color: #e2e8f0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             overflow-x: hidden;
-            padding-bottom: 40px;
         }
 
+        /* Glassmorphic Utilities */
+        .glass-panel {
+            background: rgba(15, 17, 24, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .glass-nav {
+            background: rgba(6, 7, 10, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-modal {
+            background: rgba(10, 12, 18, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        /* Glowing Effects */
+        .glow-hover:hover {
+            box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.35);
+            border-color: rgba(244, 63, 94, 0.4);
+        }
+
+        .glow-active {
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
+        }
+
+        .glow-accent {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+        }
+
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
-
         ::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
+            background: #06070a;
         }
-
         ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
+            background: #1f2430;
+            border-radius: 9999px;
         }
-
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
+            background: #f43f5e;
         }
 
-        /* ---------- NAVBAR ---------- */
-        .navbar {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(11, 11, 11, 0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px 16px;
+        /* Shimmer Loading Animation */
+        .shimmer {
+            background: linear-gradient(90deg, #0f1118 0%, #1a1e2c 50%, #0f1118 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
         }
 
-        .navbar-brand {
-            font-family: 'Georgia', 'Times New Roman', serif;
-            font-size: 1.6rem;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-            color: var(--text-primary);
-            cursor: pointer;
-            user-select: none;
-            white-space: nowrap;
-            transition: color var(--transition);
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
-        .navbar-brand:hover {
-            color: var(--accent);
+        /* Pulse Dot Animation */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px #f43f5e; }
+            50% { opacity: 0.6; transform: scale(1.1); box-shadow: 0 0 20px #f43f5e; }
+        }
+        .pulse-dot {
+            animation: pulseGlow 2s infinite ease-in-out;
         }
 
-        .navbar-search {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            flex: 1 1 320px;
-            max-width: 480px;
-            min-width: 180px;
-        }
-
-        .navbar-search input {
-            flex: 1;
-            padding: 10px 16px;
-            border: 1px solid var(--border-color);
-            border-right: none;
-            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
-            background: var(--bg-input);
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color var(--transition), box-shadow var(--transition);
-            min-width: 0;
-        }
-
-        .navbar-search input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .navbar-search input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(248, 90, 62, 0.2);
-        }
-
-        .navbar-search button {
-            padding: 10px 18px;
-            border: 1px solid var(--accent);
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-            background: var(--accent);
-            color: #fff;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: background var(--transition), transform 0.15s;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .navbar-search button:hover {
-            background: var(--accent-hover);
-        }
-
-        .navbar-search button:active {
-            transform: scale(0.96);
-        }
-
-        .navbar-search button svg {
-            width: 18px;
-            height: 18px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2.2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            flex-shrink: 0;
-        }
-
-        /* ---------- MAIN CONTAINER ---------- */
-        .main-container {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 20px 24px 0;
-        }
-
-        /* ---------- HERO BANNER ---------- */
-        .hero-banner {
-            position: relative;
-            width: 90%;
-            margin: 0 auto 32px;
-            border-radius: var(--radius);
-            overflow: hidden;
-            aspect-ratio: 16 / 9;
-            max-height: 560px;
-            background: var(--bg-secondary);
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            cursor: pointer;
-        }
-
-        .hero-banner:hover {
-            transform: scale(1.004);
-            box-shadow: 0 12px 44px rgba(0, 0, 0, 0.8);
-        }
-
-        .hero-banner .hero-video {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-            background: var(--bg-secondary);
-        }
-
-        .hero-banner .hero-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 32px 40px;
-            background: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.1) 80%);
-            transition: background 0.3s;
-            pointer-events: none;
-        }
-
-        .hero-banner .hero-overlay .hero-title {
-            font-size: clamp(1.4rem, 4vw, 2.8rem);
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 6px;
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
-        }
-
-        .hero-banner .hero-overlay .hero-meta {
-            font-size: clamp(0.85rem, 1.2vw, 1.05rem);
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-bottom: 14px;
-            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
-        }
-
-        .hero-banner .hero-overlay .hero-meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .hero-banner .hero-overlay .hero-play-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 32px;
-            border: none;
-            border-radius: 40px;
-            background: var(--accent);
-            color: #fff;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background var(--transition), transform 0.15s;
-            align-self: flex-start;
-            box-shadow: 0 4px 20px rgba(248, 90, 62, 0.35);
-            letter-spacing: 0.02em;
-            pointer-events: auto;
-        }
-
-        .hero-banner .hero-overlay .hero-play-btn:hover {
-            background: var(--accent-hover);
-        }
-
-        .hero-banner .hero-overlay .hero-play-btn:active {
-            transform: scale(0.96);
-        }
-
-        .hero-banner .hero-overlay .hero-play-btn svg {
-            width: 22px;
-            height: 22px;
-            fill: currentColor;
-        }
-
-        .hero-banner .hero-loading {
-            position: absolute;
-            inset: 0;
-            z-index: 3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(2px);
-            transition: opacity 0.4s ease;
-            pointer-events: none;
-        }
-
-        .hero-banner .hero-loading.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .hero-banner .hero-loading .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.15);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.9s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .hero-banner.hidden {
-            display: none !important;
-        }
-
-        /* ---------- SKELETON LOADING ---------- */
-        .skeleton-card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        .skeleton-card .skeleton-img {
-            aspect-ratio: 16 / 9;
-            background: #2a2a2a;
-        }
-
-        .skeleton-card .skeleton-text {
-            height: 16px;
-            background: #2a2a2a;
-            margin: 12px 14px 8px;
-            border-radius: 4px;
-        }
-
-        .skeleton-card .skeleton-text.short {
-            width: 60%;
-            margin-top: 0;
-            margin-bottom: 14px;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        /* ---------- SECTION TITLE ---------- */
-        .section-title {
-            font-size: clamp(1.3rem, 2.2vw, 2rem);
-            font-weight: 700;
-            margin-bottom: 20px;
-            letter-spacing: -0.01em;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-title .title-query {
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        /* ---------- VIDEO GRID ---------- */
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-            margin-bottom: 16px;
-        }
-
-        .video-card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            border: 1px solid var(--border-color);
-            position: relative;
-        }
-
-        .video-card:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            border-color: var(--accent);
-        }
-
-        .video-card .card-img-wrap {
-            position: relative;
-            aspect-ratio: 16 / 9;
-            overflow: hidden;
-            background: var(--bg-secondary);
-            flex-shrink: 0;
-        }
-
-        .video-card .card-img-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.3s ease;
-        }
-
-        .video-card:hover .card-img-wrap img {
-            transform: scale(1.03);
-        }
-
-        .video-card .card-body {
-            padding: 12px 14px 14px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .video-card .card-body .card-title {
-            font-weight: 600;
-            font-size: 1rem;
-            line-height: 1.3;
+        /* Line Clamp Utilities */
+        .line-clamp-2 {
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            color: var(--text-primary);
         }
 
-        .video-card .card-body .card-meta {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: auto;
-            padding-top: 6px;
+        /* Aspect Ratio Video Container */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
         }
-
-        .video-card .card-body .card-meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .video-card .card-body .card-author {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-muted);
-            font-size: 1.2rem;
-        }
-
-        .no-results span {
-            display: block;
-            font-size: 3rem;
-            margin-bottom: 12px;
-        }
-
-        /* ---------- PREVIEW VIDEO (hover) ---------- */
-        #previewVideo {
+        .video-container video,
+        .video-container iframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            display: none;
-            background: #000;
-            border-radius: 0;
-            z-index: 5;
-            pointer-events: none;
-        }
-
-        /* ---------- PLAYER MODAL ---------- */
-        .player-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 999;
-            background: rgba(0, 0, 0, 0.92);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            animation: modalFade 0.25s ease;
-        }
-
-        .player-modal.open {
-            display: flex;
-        }
-
-        @keyframes modalFade {
-            from {
-                opacity: 0;
-                transform: scale(0.97);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .player-container {
-            position: relative;
-            width: 100%;
-            max-width: 1100px;
-            background: #000;
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.9);
-            aspect-ratio: 16 / 9;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .player-container video {
-            width: 100%;
-            height: 100%;
-            display: block;
-            background: #000;
-            object-fit: contain;
-            flex: 1;
-            touch-action: none;
-        }
-
-        .player-controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 16px 18px 14px;
-            background: linear-gradient(0deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-
-        /* ONLY show controls when JS class is present */
-        .player-container.show-controls .player-controls {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Hide cursor in fullscreen when controls auto-hide */
-        .player-container:fullscreen:not(.show-controls) {
-            cursor: none;
-        }
-
-        .player-controls .controls-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .player-controls .controls-top .quality-selector {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            outline: none;
-            transition: background 0.2s;
-            backdrop-filter: blur(4px);
-        }
-
-        .player-controls .controls-top .quality-selector:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .player-controls .controls-top .quality-selector option {
-            background: #222;
-            color: #fff;
-        }
-
-        .player-controls .progress-wrap {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .player-controls .progress-wrap .time-display {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            font-variant-numeric: tabular-nums;
-            min-width: 100px;
-            letter-spacing: 0.02em;
-            flex-shrink: 0;
-        }
-
-        .player-controls .progress-wrap .progress-bar {
-            flex: 1;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            cursor: pointer;
-            position: relative;
-            transition: height 0.15s;
-            min-height: 4px;
-        }
-
-        .player-controls .progress-wrap .progress-bar:hover {
-            height: 6px;
-        }
-
-        .player-controls .progress-wrap .progress-bar .progress-fill {
-            height: 100%;
-            width: 0%;
-            background: var(--accent);
-            border-radius: 4px;
-            transition: width 0.05s linear;
-            position: relative;
-        }
-
-        .player-controls .progress-wrap .progress-bar .progress-fill::after {
-            content: '';
-            position: absolute;
-            right: -6px;
-            top: -4px;
-            width: 12px;
-            height: 12px;
-            background: var(--accent);
-            border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.2s;
-            box-shadow: 0 0 12px rgba(248, 90, 62, 0.5);
-        }
-
-        .player-controls .progress-wrap .progress-bar:hover .progress-fill::after {
-            opacity: 1;
-        }
-
-        .player-controls .controls-bottom {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-
-        .player-controls .controls-bottom .ctrl-btn {
-            background: none;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            padding: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.15s, opacity 0.2s;
-            opacity: 0.8;
-            width: 32px;
-            height: 32px;
-            border-radius: 4px;
-        }
-
-        .player-controls .controls-bottom .ctrl-btn:hover {
-            opacity: 1;
-            transform: scale(1.08);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .player-controls .controls-bottom .ctrl-btn:active {
-            transform: scale(0.92);
-        }
-
-        .player-controls .controls-bottom .ctrl-btn svg {
-            width: 22px;
-            height: 22px;
-            fill: currentColor;
-            stroke: none;
-        }
-
-        .player-controls .controls-bottom .ctrl-btn.volume-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .player-controls .controls-bottom .ctrl-btn.fullscreen-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .player-controls .controls-bottom .volume-wrap {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 0 1 120px;
-        }
-
-        .player-controls .controls-bottom .volume-wrap input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 3px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.25);
-            outline: none;
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-
-        .player-controls .controls-bottom .volume-wrap input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-            box-shadow: 0 0 8px rgba(248, 90, 62, 0.3);
-        }
-
-        .player-controls .controls-bottom .volume-wrap input[type="range"]::-moz-range-thumb {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-            border: none;
-        }
-
-        .player-controls .controls-bottom .spacer {
-            flex: 1;
-        }
-
-        .player-close-btn {
-            position: absolute;
-            top: 14px;
-            right: 18px;
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.6);
-            border: none;
-            color: #fff;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 1.6rem;
-            line-height: 1;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s, transform 0.15s;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .player-close-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.06);
-        }
-
-        .player-close-btn:active {
-            transform: scale(0.92);
-        }
-
-        .skip-indicator {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-            font-size: 3.2rem;
-            font-weight: 800;
-            color: #fff;
-            text-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 0, 0, 0.5);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.15s ease, transform 0.2s ease;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 12px 28px;
-            border-radius: 12px;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .skip-indicator.show {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.1);
-        }
-
-        .skip-indicator.forward {
-            color: #4fc3f7;
-        }
-
-        .skip-indicator.backward {
-            color: #ff8a80;
-        }
-
-        .player-loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 3;
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .player-loading.show {
-            opacity: 1;
-        }
-
-        .player-loading .spinner {
-            width: 44px;
-            height: 44px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        /* ---------- RESPONSIVE ---------- */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 10px 16px;
-                gap: 8px 12px;
-            }
-
-            .navbar-brand {
-                font-size: 1.3rem;
-            }
-
-            .navbar-search {
-                flex: 1 1 100%;
-                min-width: 0;
-            }
-
-            .navbar-search input {
-                padding: 8px 12px;
-                font-size: 0.9rem;
-            }
-
-            .navbar-search button {
-                padding: 8px 14px;
-                font-size: 0.8rem;
-            }
-
-            .navbar-search button span {
-                display: none;
-            }
-
-            .navbar-search button svg {
-                width: 20px;
-                height: 20px;
-            }
-
-            .main-container {
-                padding: 12px 14px 0;
-            }
-
-            .hero-banner {
-                width: 100%;
-                aspect-ratio: 16 / 10;
-                margin-bottom: 20px;
-                max-height: 400px;
-            }
-
-            .hero-banner .hero-overlay {
-                padding: 18px 20px 22px;
-            }
-
-            .hero-banner .hero-overlay .hero-title {
-                font-size: clamp(1.1rem, 5vw, 1.8rem);
-            }
-
-            .hero-banner .hero-overlay .hero-meta {
-                font-size: 0.8rem;
-                gap: 10px;
-            }
-
-            .hero-banner .hero-overlay .hero-play-btn {
-                padding: 10px 22px;
-                font-size: 0.95rem;
-            }
-
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: 14px;
-            }
-
-            .video-card .card-body {
-                padding: 10px 12px 12px;
-            }
-
-            .video-card .card-body .card-title {
-                font-size: 0.9rem;
-            }
-
-            .video-card .card-body .card-meta {
-                font-size: 0.75rem;
-                gap: 8px;
-            }
-
-            .player-container {
-                max-height: 95vh;
-                border-radius: 8px;
-            }
-
-            .player-controls {
-                padding: 10px 12px 10px;
-            }
-
-            .player-controls .controls-bottom .ctrl-btn {
-                width: 28px;
-                height: 28px;
-            }
-
-            .player-controls .controls-bottom .ctrl-btn svg {
-                width: 18px;
-                height: 18px;
-            }
-
-            .player-controls .progress-wrap .time-display {
-                font-size: 0.7rem;
-                min-width: 72px;
-            }
-
-            .player-close-btn {
-                width: 34px;
-                height: 34px;
-                font-size: 1.3rem;
-                top: 10px;
-                right: 12px;
-            }
-
-            .skip-indicator {
-                font-size: 2.2rem;
-                padding: 8px 18px;
-            }
-
-            .player-controls .controls-bottom .volume-wrap {
-                flex: 0 1 80px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 10px;
-            }
-
-            .hero-banner .hero-overlay {
-                padding: 14px 14px 16px;
-            }
-
-            .hero-banner .hero-overlay .hero-play-btn {
-                padding: 8px 16px;
-                font-size: 0.85rem;
-            }
-
-            .hero-banner .hero-overlay .hero-play-btn svg {
-                width: 16px;
-                height: 16px;
-            }
-
-            .hero-banner {
-                aspect-ratio: 16 / 11;
-            }
-
-            .navbar-brand {
-                font-size: 1.1rem;
-            }
-
-            .section-title {
-                font-size: 1.1rem;
-            }
-
-            .player-controls .controls-bottom {
-                gap: 8px;
-            }
-
-            .player-controls .controls-bottom .volume-wrap {
-                flex: 0 1 60px;
-            }
-        }
-
-        @media (min-width: 1200px) {
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                gap: 24px;
-            }
-
-            .main-container {
-                padding: 24px 40px 0;
-            }
-        }
-
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
         }
     </style>
 </head>
+<body class="min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
 
-<body>
-
-    <!-- ===== NAVBAR ===== -->
-    <header class="navbar" role="banner">
-        <div class="navbar-brand" id="brandLink" role="link" tabindex="0" aria-label="Go to homepage">GET THE RANCH
-        </div>
-        <form class="navbar-search" id="searchForm" role="search" autocomplete="off">
-            <input type="text" id="searchInput" placeholder="Search videos…" aria-label="Search" />
-            <button type="submit" aria-label="Search">
-                <svg viewBox="0 0 24 24">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <span>SEARCH</span>
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 glass-nav px-4 lg:px-8 py-3 flex items-center justify-between transition-all duration-300">
+        <!-- Left: Brand Logo & Mobile Sidebar Toggle -->
+        <div class="flex items-center space-x-4">
+            <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition" aria-label="Toggle Navigation Menu">
+                <i class="fa-solid fa-bars-staggered text-xl"></i>
             </button>
-        </form>
+            <a href="#" id="brandLogo" class="flex items-center space-x-3 group">
+                <div class="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-violet-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-play text-white text-base ml-0.5"></i>
+                    <span class="absolute -top-1 -right-1 w-3 h-3 bg-brand-500 rounded-full pulse-dot"></span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">
+                        NEXUS<span class="text-brand-500">PLAY</span>
+                    </span>
+                    <span class="text-[10px] text-gray-400 tracking-widest font-mono uppercase">ULTRA STREAM</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Center: Search Input Bar -->
+        <div class="flex-1 max-w-2xl mx-4 hidden md:block">
+            <div class="relative flex items-center">
+                <div class="absolute left-4 text-gray-400 pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="searchInput"
+                    placeholder="Search thousands of videos, creators, streams... (Press '/' to focus)" 
+                    class="w-full bg-card/80 border border-white/10 rounded-2xl pl-11 pr-24 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/20 transition-all shadow-inner"
+                >
+                <div class="absolute right-3 flex items-center space-x-2">
+                    <button id="clearSearchBtn" class="hidden text-gray-400 hover:text-white p-1 text-xs" title="Clear search">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <span class="hidden lg:inline-block px-2 py-0.5 text-[10px] font-mono font-semibold bg-white/10 text-gray-400 rounded border border-white/10">/</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Stats, API Status & Controls -->
+        <div class="flex items-center space-x-3">
+            <!-- Mobile Search Icon Trigger -->
+            <button id="mobileSearchToggle" class="md:hidden p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+
+            <!-- API Status Badge -->
+            <div id="apiStatusBadge" class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium" title="Cloudflare Worker Endpoint Active">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="font-mono text-[11px]" id="statusText">CONNECTED</span>
+            </div>
+
+            <!-- Watchlist Counter -->
+            <button id="navWatchlistBtn" class="relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition flex items-center justify-center" title="Saved Watchlist">
+                <i class="fa-solid fa-bookmark text-base"></i>
+                <span id="watchlistCount" class="absolute -top-1 -right-1 bg-brand-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-oled">0</span>
+            </button>
+
+            <!-- Watch History Counter -->
+            <button id="navHistoryBtn" class="relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition flex items-center justify-center" title="Watch History">
+                <i class="fa-solid fa-clock-rotate-left text-base"></i>
+                <span id="historyCount" class="absolute -top-1 -right-1 bg-violet-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-oled">0</span>
+            </button>
+        </div>
     </header>
 
-    <!-- ===== MAIN ===== -->
-    <main class="main-container" id="mainContainer">
+    <!-- MOBILE SEARCH BAR OVERLAY -->
+    <div id="mobileSearchOverlay" class="hidden md:hidden p-4 glass-nav border-b border-white/10 space-y-2">
+        <div class="relative flex items-center">
+            <input 
+                type="text" 
+                id="mobileSearchInput"
+                placeholder="Search videos..." 
+                class="w-full bg-card border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-brand-500"
+            >
+            <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-400"></i>
+            <button id="closeMobileSearch" class="absolute right-3 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
 
-        <!-- Hero Banner -->
-        <section class="hero-banner" id="heroBanner" role="figure" aria-label="Featured video">
-            <video class="hero-video" id="heroVideo" crossorigin="anonymous" muted playsinline poster=""></video>
-            <div class="hero-loading" id="heroLoading">
-                <div class="spinner"></div>
-            </div>
-            <div class="hero-overlay">
-                <div class="hero-title" id="heroTitle">Loading…</div>
-                <div class="hero-meta">
-                    <span id="heroAuthor">—</span>
-                    <span id="heroViews">0 views</span>
+    <!-- MAIN WRAPPER CONTAINER -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- SIDEBAR NAVIGATION -->
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-30 w-64 bg-oled/95 lg:bg-transparent border-r border-white/5 flex flex-col justify-between transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+            <div class="p-4 space-y-6 overflow-y-auto">
+                <!-- Navigation Links -->
+                <div class="space-y-1">
+                    <div class="px-3 text-[11px] font-bold tracking-wider text-gray-500 uppercase font-mono mb-2">Navigation</div>
+                    <button data-tab="home" class="nav-tab active w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-white bg-brand-500/15 border border-brand-500/30">
+                        <i class="fa-solid fa-house text-brand-500 text-base"></i>
+                        <span>Explore Feed</span>
+                    </button>
+                    <button data-tab="trending" class="nav-tab w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition">
+                        <i class="fa-solid fa-fire text-amber-500 text-base"></i>
+                        <span>Trending & Top</span>
+                    </button>
+                    <button data-tab="watchlist" class="nav-tab w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition">
+                        <i class="fa-solid fa-bookmark text-rose-400 text-base"></i>
+                        <span>Watchlist</span>
+                    </button>
+                    <button data-tab="history" class="nav-tab w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition">
+                        <i class="fa-solid fa-clock-rotate-left text-violet-400 text-base"></i>
+                        <span>Watch History</span>
+                    </button>
                 </div>
-                <button class="hero-play-btn" id="heroPlayBtn" aria-label="Play featured video">
-                    <svg viewBox="0 0 24 24">
-                        <polygon points="5,3 19,12 5,21" />
-                    </svg>
-                    PLAY
+
+                <div class="h-px bg-white/5"></div>
+
+                <!-- Quick Categories / Tags -->
+                <div class="space-y-2">
+                    <div class="px-3 text-[11px] font-bold tracking-wider text-gray-500 uppercase font-mono">Popular Tags</div>
+                    <div class="flex flex-wrap gap-1.5 px-2" id="sidebarTags">
+                        <button data-tag="4K" class="tag-pill px-3 py-1 rounded-lg text-xs bg-white/5 hover:bg-white/10 text-gray-300 transition">4K Ultra</button>
+                        <button data-tag="HD" class="tag-pill px-3 py-1 rounded-lg text-xs bg-white/5 hover:bg-white/10 text-gray-300 transition">1080p</button>
+                        <button data-tag="Popular" class="tag-pill px-3 py-1 rounded-lg text-xs bg-white/5 hover:bg-white/10 text-gray-300 transition">Most Viewed</button>
+                        <button data-tag="Short" class="tag-pill px-3 py-1 rounded-lg text-xs bg-white/5 hover:bg-white/10 text-gray-300 transition">Quick Watch</button>
+                        <button data-tag="Long" class="tag-pill px-3 py-1 rounded-lg text-xs bg-white/5 hover:bg-white/10 text-gray-300 transition">Full Length</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer Info -->
+            <div class="p-4 border-t border-white/5 text-xs text-gray-500 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="font-mono text-[10px]">Worker Node</span>
+                    <span class="text-emerald-400 font-mono text-[10px]">Online</span>
+                </div>
+                <p class="text-[11px] text-gray-500 leading-relaxed">
+                    Powered by Cloudflare Edge &amp; HLS Stream Engine.
+                </p>
+            </div>
+        </aside>
+
+        <!-- BACKDROP FOR MOBILE SIDEBAR -->
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 hidden lg:hidden"></div>
+
+        <!-- MAIN VIEWPORT CONTENT AREA -->
+        <main class="flex-1 overflow-y-auto px-4 lg:px-8 py-6 space-y-8 max-w-7xl mx-auto">
+
+            <!-- HERO SPOTLIGHT BANNER (DYNAMIC TOP VIDEO) -->
+            <section id="heroBanner" class="relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-6 md:p-10 transition-all duration-500 hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-oled via-oled/80 to-transparent z-10"></div>
+                <img id="heroImage" src="" alt="Spotlight" class="absolute inset-0 w-full h-full object-cover opacity-30 filter blur-sm">
+                
+                <div class="relative z-20 max-w-2xl space-y-4">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/20 border border-brand-500/40 text-brand-400 text-xs font-semibold uppercase tracking-wider">
+                        <i class="fa-solid fa-fire animate-pulse"></i>
+                        <span>Spotlight Featured Video</span>
+                    </div>
+                    <h1 id="heroTitle" class="text-2xl md:text-4xl font-extrabold text-white leading-tight line-clamp-2">
+                        Loading featured content...
+                    </h1>
+                    <div class="flex items-center space-x-4 text-xs md:text-sm text-gray-300 font-medium">
+                        <span id="heroAuthor" class="flex items-center space-x-1.5 text-gray-200">
+                            <i class="fa-solid fa-circle-user text-brand-500"></i>
+                            <span>Creator</span>
+                        </span>
+                        <span class="w-1 h-1 rounded-full bg-gray-500"></span>
+                        <span id="heroViews" class="text-gray-400">0 views</span>
+                        <span class="w-1 h-1 rounded-full bg-gray-500"></span>
+                        <span id="heroRuntime" class="px-2 py-0.5 rounded bg-white/10 text-gray-200 font-mono text-xs">0:00</span>
+                    </div>
+                    <div class="pt-2 flex items-center space-x-3">
+                        <button id="heroPlayBtn" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold text-sm shadow-lg shadow-brand-500/25 flex items-center space-x-2 transition transform active:scale-95">
+                            <i class="fa-solid fa-play"></i>
+                            <span>Watch Stream Now</span>
+                        </button>
+                        <button id="heroSaveBtn" class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white transition border border-white/10" title="Bookmark Video">
+                            <i class="fa-regular fa-bookmark"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CATEGORY FILTER & SORTING BAR -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+                <div class="flex items-center space-x-3">
+                    <h2 id="viewHeading" class="text-xl font-bold text-white flex items-center space-x-2">
+                        <span>Explore Videos</span>
+                    </h2>
+                    <span id="videoCountBadge" class="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-white/10 text-gray-400">0 items</span>
+                </div>
+
+                <!-- Sort & Filter options -->
+                <div class="flex items-center space-x-2 overflow-x-auto pb-1 sm:pb-0">
+                    <button data-sort="default" class="sort-btn active px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 text-white border border-white/10 hover:border-brand-500/50 transition">
+                        Recommended
+                    </button>
+                    <button data-sort="views" class="sort-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 text-gray-400 hover:text-white border border-transparent hover:border-white/10 transition">
+                        Most Viewed
+                    </button>
+                    <button data-sort="title" class="sort-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 text-gray-400 hover:text-white border border-transparent hover:border-white/10 transition">
+                        Alphabetical
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEARCH RESULTS INDICATOR BANNER -->
+            <div id="searchBanner" class="hidden glass-panel p-4 rounded-2xl flex items-center justify-between border-l-4 border-brand-500">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-xl bg-brand-500/20 text-brand-500 flex items-center justify-center">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-400">Search Results for</div>
+                        <div id="searchQueryText" class="text-sm font-bold text-white">""</div>
+                    </div>
+                </div>
+                <button id="resetSearchBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-gray-200 transition">
+                    Clear Search
                 </button>
             </div>
-        </section>
 
-        <!-- Section Title -->
-        <h2 class="section-title" id="sectionTitle">VIDEOS YOU MAY LIKE</h2>
-
-        <!-- Video Grid -->
-        <div class="video-grid" id="videoGrid" role="list"></div>
-
-    </main>
-
-    <!-- ===== PREVIEW VIDEO (hover) ===== -->
-    <video id="previewVideo" crossorigin="anonymous" muted playsinline></video>
-
-    <!-- ===== VIDEO PLAYER MODAL ===== -->
-    <div class="player-modal" id="playerModal" role="dialog" aria-label="Video player">
-        <div class="player-container" id="playerContainer">
-            <video id="playerVideo" crossorigin="anonymous" playsinline preload="metadata"></video>
-            <div class="player-loading" id="playerLoading">
-                <div class="spinner"></div>
-                <span>Loading stream…</span>
+            <!-- SKELETON LOADERS CONTAINER -->
+            <div id="skeletonGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Skeleton Card Template x 8 -->
+                <script>
+                    for(let i = 0; i < 8; i++) {
+                        document.write(`
+                            <div class="glass-panel rounded-2xl overflow-hidden border border-white/5 p-3 space-y-3">
+                                <div class="w-full aspect-video rounded-xl shimmer"></div>
+                                <div class="space-y-2">
+                                    <div class="h-4 w-3/4 rounded shimmer"></div>
+                                    <div class="h-3 w-1/2 rounded shimmer"></div>
+                                    <div class="flex justify-between pt-2">
+                                        <div class="h-3 w-1/3 rounded shimmer"></div>
+                                        <div class="h-3 w-1/4 rounded shimmer"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    }
+                </script>
             </div>
-            <div class="skip-indicator" id="skipIndicator"></div>
-            <button class="player-close-btn" id="playerCloseBtn" aria-label="Close player">✕</button>
-            <div class="player-controls" id="playerControls">
-                <div class="controls-top">
-                    <div style="flex:1"></div>
-                    <select class="quality-selector" id="qualitySelector" aria-label="Video quality">
-                        <option value="">Auto</option>
-                    </select>
+
+            <!-- MAIN VIDEO GRID -->
+            <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Video Cards render dynamically -->
+            </div>
+
+            <!-- EMPTY STATE UI -->
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-center space-y-4">
+                <div class="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl text-gray-500">
+                    <i class="fa-solid fa-film"></i>
                 </div>
-                <div class="progress-wrap">
-                    <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
-                    <div class="progress-bar" id="progressBar" role="slider" aria-label="Seek" aria-valuemin="0"
-                        aria-valuemax="100" aria-valuenow="0" tabindex="0">
-                        <div class="progress-fill" id="progressFill"></div>
+                <div class="space-y-1">
+                    <h3 class="text-lg font-bold text-white" id="emptyTitle">No Videos Found</h3>
+                    <p class="text-sm text-gray-400 max-w-sm" id="emptyMessage">Try searching for something else or explore our homepage feed.</p>
+                </div>
+                <button id="emptyResetBtn" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition">
+                    Return to Homepage
+                </button>
+            </div>
+
+            <!-- ERROR DIAGNOSTIC STATE -->
+            <div id="errorState" class="hidden glass-panel p-8 rounded-3xl border border-rose-500/30 text-center space-y-4 max-w-lg mx-auto my-12">
+                <div class="w-16 h-16 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="text-lg font-bold text-white">Connection Issue</h3>
+                    <p class="text-xs text-gray-400" id="errorMessage">Unable to communicate with endpointWorker at apiph.hub4u.dpdns.org.</p>
+                </div>
+                <div class="pt-2 flex justify-center space-x-3">
+                    <button id="retryApiBtn" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Retry Connection</span>
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- VIDEO PLAYER MODAL / THEATER OVERLAY -->
+    <div id="playerModal" class="fixed inset-0 z-50 glass-modal flex flex-col hidden overflow-y-auto transition-opacity duration-300">
+        
+        <!-- Player Modal Header Bar -->
+        <div class="sticky top-0 z-10 glass-nav px-4 lg:px-8 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 overflow-hidden">
+                <span class="px-2.5 py-1 rounded-lg bg-brand-500/20 border border-brand-500/30 text-brand-400 font-mono text-xs font-bold uppercase">
+                    NOW PLAYING
+                </span>
+                <h3 id="playerModalTitle" class="text-sm md:text-base font-bold text-white truncate max-w-xl">
+                    Video Title
+                </h3>
+            </div>
+            <div class="flex items-center space-x-3">
+                <!-- Cinema / Theater Toggle -->
+                <button id="cinemaToggleBtn" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition text-sm" title="Toggle Cinema Width">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+                <!-- Close Modal Button -->
+                <button id="closePlayerModalBtn" class="p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 transition" title="Close Player (Esc)">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Player Body Layout -->
+        <div class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left & Main: Video Frame & Metadata (Cols 2) -->
+            <div id="playerContainerCol" class="lg:col-span-2 space-y-6">
+                
+                <!-- Video Player Container Box -->
+                <div class="relative bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
+                    <div class="video-container">
+                        <video id="mainVideoPlayer" controls controlsList="nodownload" class="w-full h-full object-contain"></video>
+                    </div>
+
+                    <!-- Quality Selector Overlay Dropdown -->
+                    <div class="absolute top-4 right-4 z-20 flex items-center space-x-2">
+                        <div class="relative inline-block text-left">
+                            <button id="qualityMenuBtn" class="px-3 py-1.5 rounded-xl bg-black/70 hover:bg-black/90 text-white font-mono text-xs border border-white/20 backdrop-blur-md flex items-center space-x-2 shadow-lg transition">
+                                <i class="fa-solid fa-gear text-brand-500"></i>
+                                <span id="currentQualityLabel">Auto Quality</span>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-gray-400"></i>
+                            </button>
+                            <div id="qualityDropdown" class="hidden absolute right-0 mt-2 w-44 rounded-2xl glass-panel shadow-2xl border border-white/10 py-2 z-30 space-y-1">
+                                <div class="px-3 py-1 text-[10px] font-bold font-mono text-gray-400 uppercase border-b border-white/5">Stream Resolution</div>
+                                <div id="qualityListContainer" class="space-y-0.5">
+                                    <!-- Dynamic stream qualities -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="controls-bottom">
-                    <button class="ctrl-btn" id="playPauseBtn" aria-label="Play / Pause">
-                        <svg viewBox="0 0 24 24">
-                            <polygon points="5,3 19,12 5,21" />
-                        </svg>
-                    </button>
-                    <div class="volume-wrap">
-                        <button class="ctrl-btn volume-btn" id="muteBtn" aria-label="Mute / Unmute">
-                            <svg viewBox="0 0 24 24">
-                                <polygon points="11,5 6,9 2,9 2,15 6,15 11,19" />
-                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                            </svg>
-                        </button>
-                        <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8"
-                            aria-label="Volume" />
+
+                <!-- Video Metadata Details -->
+                <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="space-y-1">
+                            <h2 id="playerVideoTitle" class="text-xl md:text-2xl font-extrabold text-white leading-tight">
+                                Video Title Placeholder
+                            </h2>
+                            <div class="flex items-center space-x-3 text-xs text-gray-400">
+                                <span id="playerAuthor" class="font-medium text-gray-200 flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-circle-user text-brand-500"></i>
+                                    <span id="playerAuthorText">Creator</span>
+                                </span>
+                                <span>•</span>
+                                <span id="playerViews" class="font-mono">0 views</span>
+                                <span>•</span>
+                                <span id="playerKeyBadge" class="font-mono text-gray-500">Key: -</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Controls (Bookmark, Share) -->
+                        <div class="flex items-center space-x-2">
+                            <button id="modalSaveBtn" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold flex items-center space-x-2 transition">
+                                <i class="fa-regular fa-bookmark"></i>
+                                <span id="modalSaveText">Bookmark</span>
+                            </button>
+                            <button id="modalShareBtn" class="px-4 py-2.5 rounded-xl bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/30 text-brand-400 text-xs font-semibold flex items-center space-x-2 transition">
+                                <i class="fa-solid fa-share-nodes"></i>
+                                <span>Share Link</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="spacer"></div>
-                    <button class="ctrl-btn fullscreen-btn" id="fullscreenBtn" aria-label="Toggle fullscreen">
-                        <svg viewBox="0 0 24 24">
-                            <polyline points="15 3 21 3 21 9" />
-                            <polyline points="9 21 3 21 3 15" />
-                            <line x1="21" y1="3" x2="14" y2="10" />
-                            <line x1="3" y1="21" x2="10" y2="14" />
-                        </svg>
-                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Up Next / Related Videos Queue -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-[#f43f5e] fa-bars-staggered text-brand-500"></i>
+                        <span>Up Next / Recommendations</span>
+                    </h3>
+                    <span class="text-xs text-gray-500 font-mono">AUTOPLAY</span>
+                </div>
+
+                <div id="relatedVideosQueue" class="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                    <!-- Dynamic related video items -->
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        (function(_0x141c,_0x3394af,_0x68560a,_0x3g3a3d,_0x3a0f,_0x50dfba,_0x3824b,_0x79403f,_0xefd9c,_0x40a89c){'use strict';_0x3394af="\u0068\u0074\u0074\u0070\u0073\u003A\u002F\u002F\u0061\u0070\u0069\u0070\u0068\u002E\u0068\u0075\u0062\u0034\u0075\u002E\u0064\u0070\u0064\u006E\u0073\u002E\u006F\u0072\u0067";_0x141c=(822955^822955)+(855762^855763);const $=(sel,ctx=document)=>ctx['\u0071\u0075\u0065\u0072\u0079\u0053\u0065\u006C\u0065\u0063\u0074\u006F\u0072'](sel);const _0x76187e=(sel,ctx=document)=>[...ctx['\u0071\u0075\u0065\u0072\u0079\u0053\u0065\u006C\u0065\u0063\u0074\u006F\u0072\u0041\u006C\u006C'](sel)];_0x68560a='\u0062\u0066\u006D\u0069\u0067\u006B';const _0x18a=$("\u0023\u0062\u0072\u0061\u006E\u0064\u004C\u0069\u006E\u006B");_0x3g3a3d=(467004^467007)+(562245^562240);const _0x299ea=$("\u0023\u0073\u0065\u0061\u0072\u0063\u0068\u0046\u006F\u0072\u006D");var _0x25b3ba=(885472^885475)+(700752^700761);const _0xe2a=$("\u0023\u0073\u0065\u0061\u0072\u0063\u0068\u0049\u006E\u0070\u0075\u0074");_0x25b3ba=(779116^779115)+(680791^680784);var _0x24ge5a=(301525^301524)+(556396^556394);const _0x6cc=$("\u0023\u0068\u0065\u0072\u006F\u0042\u0061\u006E\u006E\u0065\u0072");_0x24ge5a=(799101^799092)+(481839^481830);var _0x_0xf6d=(655700^655696)+(660827^660830);const _0x1575gd=$("\u0023\u0068\u0065\u0072\u006F\u0056\u0069\u0064\u0065\u006F");_0x_0xf6d=178590^178582;const _0xa8c=$("\u0023\u0068\u0065\u0072\u006F\u004C\u006F\u0061\u0064\u0069\u006E\u0067");_0x3a0f=(858959^858951)+(306272^306275);var _0x7355db=(619370^619363)+(768351^768344);const _0x45eca=$("\u0023\u0068\u0065\u0072\u006F\u0054\u0069\u0074\u006C\u0065");_0x7355db="djnmfb".split("").reverse().join("");var _0x8d782a=(874311^874305)+(168424^168424);const _0x11_0x516=$("rohtuAoreh#".split("").reverse().join(""));_0x8d782a="bbgome".split("").reverse().join("");const _0xe48d2c=$("\u0023\u0068\u0065\u0072\u006F\u0056\u0069\u0065\u0077\u0073");const _0x13d4g=$("\u0023\u0068\u0065\u0072\u006F\u0050\u006C\u0061\u0079\u0042\u0074\u006E");const _0x85b15e=$("\u0023\u0073\u0065\u0063\u0074\u0069\u006F\u006E\u0054\u0069\u0074\u006C\u0065");_0x50dfba=393272^393272;const _0xf88eaa=$("\u0023\u0076\u0069\u0064\u0065\u006F\u0047\u0072\u0069\u0064");const _0x93fd5c=$("\u0023\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0056\u0069\u0064\u0065\u006F");const _0x35b3bc=$("\u0023\u0070\u006C\u0061\u0079\u0065\u0072\u004D\u006F\u0064\u0061\u006C");var _0x94a=(475495^475494)+(687968^687976);const _0x7f8ae=$("reniatnoCreyalp#".split("").reverse().join(""));_0x94a='\u006D\u006B\u006D\u0063\u0071\u006D';var _0x346f=(522525^522517)+(825798^825796);const _0x69ggd=$("\u0023\u0070\u006C\u0061\u0079\u0065\u0072\u0056\u0069\u0064\u0065\u006F");_0x346f=(687493^687492)+(308056^308061);const _0x7fb38g=$("\u0023\u0070\u006C\u0061\u0079\u0065\u0072\u004C\u006F\u0061\u0064\u0069\u006E\u0067");_0x3824b='\u0069\u006E\u0064\u006E\u0063\u0061';var _0x13d=(122292^122290)+(316487^316486);const _0x2dc=$("\u0023\u0073\u006B\u0069\u0070\u0049\u006E\u0064\u0069\u0063\u0061\u0074\u006F\u0072");_0x13d=295704^295709;const _0x8b_0x527=$("\u0023\u0070\u006C\u0061\u0079\u0065\u0072\u0043\u006C\u006F\u0073\u0065\u0042\u0074\u006E");const _0xe2e1ee=$("\u0023\u0070\u006C\u0061\u0079\u0065\u0072\u0043\u006F\u006E\u0074\u0072\u006F\u006C\u0073");var _0xd71b2c=(213315^213315)+(598347^598348);const _0x4g6f5b=$("ntBesuaPyalp#".split("").reverse().join(""));_0xd71b2c="abqibi".split("").reverse().join("");var _0x34c7ac=(659354^659357)+(581899^581896);const _0xd51dac=$("\u0023\u0070\u0072\u006F\u0067\u0072\u0065\u0073\u0073\u0042\u0061\u0072");_0x34c7ac="mhgoia".split("").reverse().join("");const _0x32363d=$("\u0023\u0070\u0072\u006F\u0067\u0072\u0065\u0073\u0073\u0046\u0069\u006C\u006C");_0x79403f=668647^668654;var _0xcf757g=(104368^104371)+(834830^834823);const _0xdef=$("\u0023\u0074\u0069\u006D\u0065\u0044\u0069\u0073\u0070\u006C\u0061\u0079");_0xcf757g="jgnbdh".split("").reverse().join("");const _0x431a=$("redilSemulov#".split("").reverse().join(""));var _0x9987be=(956766^956761)+(208672^208673);const _0x5ecf=$("\u0023\u006D\u0075\u0074\u0065\u0042\u0074\u006E");_0x9987be='\u006C\u006B\u006B\u006E\u006B\u0070';const _0xa4f=$("\u0023\u0066\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E\u0042\u0074\u006E");_0xefd9c=(127163^127154)+(831090^831098);const _0xf3216f=$("rotceleSytilauq#".split("").reverse().join(""));var _0x2_0x42b=(100082^100086)+(148571^148574);const _0xe83cg={'\u0068\u006F\u006D\u0065\u0070\u0061\u0067\u0065\u0044\u0061\u0074\u0061':null,"heroIndex":0,"searchResults":null,'\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0051\u0075\u0065\u0072\u0079':null,'\u0069\u0073\u0053\u0065\u0061\u0072\u0063\u0068\u0069\u006E\u0067':false,'\u0069\u0073\u0050\u006C\u0061\u0079\u0065\u0072\u004F\u0070\u0065\u006E':false,'\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0056\u0069\u0064\u0065\u006F\u004B\u0065\u0079':null,'\u0068\u006C\u0073\u0049\u006E\u0073\u0074\u0061\u006E\u0063\u0065':null,'\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C':null,"qualities":[],'\u0069\u0073\u0050\u006C\u0061\u0079\u0069\u006E\u0067':false,'\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067':false,"volume":0.8,"isMuted":false,"isFullscreen":false,'\u0073\u006B\u0069\u0070\u0054\u0069\u006D\u0065\u006F\u0075\u0074':null,"heroHls":null,"heroStreamUrl":null,'\u0068\u0065\u0072\u006F\u0056\u0069\u0064\u0065\u006F\u004B\u0065\u0079':null,"heroLoaded":false,"heroVisible":!![],'\u0068\u0065\u0072\u006F\u0046\u006F\u0063\u0075\u0073\u0065\u0064':!![],'\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0048\u006C\u0073':null,"previewStreamUrl":null,"previewVideoKey":null,'\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0054\u0069\u006D\u0065\u006F\u0075\u0074':null,"previewCard":null,'\u0063\u006F\u006E\u0074\u0072\u006F\u006C\u0073\u0054\u0069\u006D\u0065\u0072':null,'\u006C\u0061\u0073\u0074\u004D\u006F\u0075\u0073\u0065\u0058':-(224986^224987),'\u006C\u0061\u0073\u0074\u004D\u006F\u0075\u0073\u0065\u0059':-(623480^623481)};_0x2_0x42b=875369^875373;async function _0xg11a(endpoint){const _0x71727e=endpoint['\u0073\u0074\u0061\u0072\u0074\u0073\u0057\u0069\u0074\u0068']("\u0068\u0074\u0074\u0070")?endpoint:_0x3394af+endpoint;const _0x14b=await fetch(_0x71727e);if(!_0x14b['\u006F\u006B'])throw new Error(`HTTP ${_0x14b['\u0073\u0074\u0061\u0074\u0075\u0073']}`);const _0x15_0xebg=await _0x14b['\u006A\u0073\u006F\u006E']();if(_0x15_0xebg['\u0065\u0072\u0072\u006F\u0072'])throw new Error(_0x15_0xebg['\u0065\u0072\u0072\u006F\u0072']||"rorre IPA".split("").reverse().join(""));return _0x15_0xebg;}function _0x2f_0x82c(){return _0xg11a("\u002F\u0067\u0065\u0074\u005F\u0068\u006F\u006D\u0065\u0070\u0061\u0067\u0065");}function _0x8_0xa03(rawQuery){var _0xa1acd=(872966^872964)+(857657^857649);const _0xad80b=btoa(unescape(encodeURIComponent(rawQuery)));_0xa1acd=(264598^264607)+(128963^128967);return _0xg11a(`/search?q=${_0xad80b}`);}function _0xd3b7b(videoKey){return _0xg11a(`/fullqual?videoKey=${encodeURIComponent(videoKey)}`);}function _0x7582a(n){if(!n&&n!==(529521^529521))return"\u0030\u0020\u0076\u0069\u0065\u0077\u0073";const _0x51858e=Number(n);if(_0x51858e>=1_000_000)return(_0x51858e/1_000_000)['\u0074\u006F\u0046\u0069\u0078\u0065\u0064'](487001^487000)+"\u004D\u0020\u0076\u0069\u0065\u0077\u0073";if(_0x51858e>=(686403^686763))return(_0x51858e/(674898^675770))['\u0074\u006F\u0046\u0069\u0078\u0065\u0064'](889821^889820)+"\u004B\u0020\u0076\u0069\u0065\u0077\u0073";return _0x51858e+"\u0020\u0076\u0069\u0065\u0077\u0073";}function _0x35fc(sec){if(!sec&&sec!==(751957^751957))return"\u0030\u0030\u003A\u0030\u0030";const s=Math['\u0066\u006C\u006F\u006F\u0072'](sec);const m=Math['\u0066\u006C\u006F\u006F\u0072'](s/(291180^291152));const h=Math['\u0066\u006C\u006F\u006F\u0072'](m/(768933^768921));var _0xgc9ec=(668449^668450)+(889351^889351);const _0xa65ff=s%(922284^922256);_0xgc9ec=226513^226515;if(h>(416319^416319)){return String(h)['\u0070\u0061\u0064\u0053\u0074\u0061\u0072\u0074'](570113^570115,"\u0030")+"\u003A"+String(m%(441063^441051))['\u0070\u0061\u0064\u0053\u0074\u0061\u0072\u0074'](693851^693849,"\u0030")+"\u003A"+String(_0xa65ff)['\u0070\u0061\u0064\u0053\u0074\u0061\u0072\u0074'](447565^447567,"\u0030");}return String(m)['\u0070\u0061\u0064\u0053\u0074\u0061\u0072\u0074'](362250^362248,"\u0030")+"\u003A"+String(_0xa65ff)['\u0070\u0061\u0064\u0053\u0074\u0061\u0072\u0074'](143225^143227,"\u0030");}function _0x9eg09d(val){return(val||'')['\u0074\u006F\u0053\u0074\u0072\u0069\u006E\u0067']()['\u0074\u0072\u0069\u006D']()||"deltitnU".split("").reverse().join("");}function _0xc99fda(str,_0xf_0x659){const _0xf3_0x81a=document['\u0063\u0072\u0065\u0061\u0074\u0065\u0045\u006C\u0065\u006D\u0065\u006E\u0074']("vid".split("").reverse().join(""));_0xf_0x659=(997085^997087)+(942267^942265);_0xf3_0x81a['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']=str;return _0xf3_0x81a['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C'];}function _0x38c0e(label){var _0x4391b=(398923^398926)+(566110^566110);const _0x13_0x655=String(label)['\u006D\u0061\u0074\u0063\u0068'](new RegExp(")+d\\(".split("").reverse().join(""),""));_0x4391b="nhobhm".split("").reverse().join("");return _0x13_0x655?parseInt(_0x13_0x655[153649^153648],464955^464945):349910^349910;}function _0xec1gfb(count=772794^772786,_0xee0f){_0xee0f='';for(let i=133514^133514;i<count;i++){_0xee0f+=`
-                        <div class="skeleton-card">
-                            <div class="skeleton-img"></div>
-                            <div class="skeleton-text"></div>
-                            <div class="skeleton-text short"></div>
-                        </div>
-                    `;}_0xf88eaa['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=_0xee0f;}function _0xcd5de(data){_0xe83cg['\u0068\u006F\u006D\u0065\u0070\u0061\u0067\u0065\u0044\u0061\u0074\u0061']=data['\u0072\u0065\u0073\u0075\u006C\u0074\u0073']||[];_0xe83cg['\u0069\u0073\u0053\u0065\u0061\u0072\u0063\u0068\u0069\u006E\u0067']=false;_0xe83cg['\u0073\u0065\u0061\u0072\u0063\u0068\u0052\u0065\u0073\u0075\u006C\u0074\u0073']=null;_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0051\u0075\u0065\u0072\u0079']=null;if(!_0xe83cg['\u0068\u006F\u006D\u0065\u0070\u0061\u0067\u0065\u0044\u0061\u0074\u0061']['\u006C\u0065\u006E\u0067\u0074\u0068']){_0x6cc['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("neddih".split("").reverse().join(""));_0x85b15e['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']="dnuof soediv oN".split("").reverse().join("");_0xf88eaa['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=`<div class="no-results"><span>🎬</span>No videos available</div>`;return;}_0xe83cg['\u0068\u0065\u0072\u006F\u0049\u006E\u0064\u0065\u0078']=Math['\u0066\u006C\u006F\u006F\u0072'](Math['\u0072\u0061\u006E\u0064\u006F\u006D']()*_0xe83cg['\u0068\u006F\u006D\u0065\u0070\u0061\u0067\u0065\u0044\u0061\u0074\u0061']['\u006C\u0065\u006E\u0067\u0074\u0068']);var _0x7eb2b=(258637^258629)+(739339^739340);const _0xd10af=_0xe83cg['\u0068\u006F\u006D\u0065\u0070\u0061\u0067\u0065\u0044\u0061\u0074\u0061'][_0xe83cg['\u0068\u0065\u0072\u006F\u0049\u006E\u0064\u0065\u0078']];_0x7eb2b=(252334^252331)+(345297^345304);_0xf2_0x468(_0xd10af);var _0xba67ge=(554204^554204)+(890025^890026);const _0x59378d=_0xe83cg['\u0068\u006F\u006D\u0065\u0070\u0061\u0067\u0065\u0044\u0061\u0074\u0061']['\u0066\u0069\u006C\u0074\u0065\u0072']((_,i)=>i!==_0xe83cg['\u0068\u0065\u0072\u006F\u0049\u006E\u0064\u0065\u0078']);_0xba67ge=(219028^219025)+(134265^134257);_0xe9da1f(_0x59378d);_0x85b15e['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']="EKIL YAM UOY SOEDIV".split("").reverse().join("");_0x6cc['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("\u0068\u0069\u0064\u0064\u0065\u006E");}function _0xf2_0x468(video,_0x3_0xcba){const _0x2c69db=video['\u0076\u0069\u0064\u0065\u006F\u004B\u0065\u0079']||'';_0x3_0xcba=925818^925823;_0xe83cg['\u0068\u0065\u0072\u006F\u0056\u0069\u0064\u0065\u006F\u004B\u0065\u0079']=_0x2c69db;_0x45eca['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']=_0x9eg09d(video['\u0074\u0069\u0074\u006C\u0065']);_0x11_0x516['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']=_0x9eg09d(video['\u0061\u0075\u0074\u0068\u006F\u0072']);_0xe48d2c['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']=_0x7582a(video['\u0076\u0069\u0065\u0077\u0073']);_0x13d4g['\u0064\u0061\u0074\u0061\u0073\u0065\u0074']['\u0076\u0069\u0064\u0065\u006F\u004B\u0065\u0079']=_0x2c69db;_0x6cc['\u0064\u0061\u0074\u0061\u0073\u0065\u0074']['\u0076\u0069\u0064\u0065\u006F\u004B\u0065\u0079']=_0x2c69db;_0x1575gd['\u0070\u006F\u0073\u0074\u0065\u0072']=video['\u0074\u0068\u0075\u006D\u0062\u006E\u0061\u0069\u006C']||'';_0x9_0x42f(_0x2c69db);}function _0xe9da1f(videos,_0x29c7d){if(!videos||!videos['\u006C\u0065\u006E\u0067\u0074\u0068']){_0xf88eaa['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=`<div class="no-results"><span>📭</span>No more videos</div>`;return;}var _0xd0f=(203359^203359)+(424121^424125);_0x29c7d='';_0xd0f=267038^267034;for(const v of videos){var _0x9111eb=(248917^248919)+(819377^819384);const _0xebd=v['\u0076\u0069\u0064\u0065\u006F\u004B\u0065\u0079']||'';_0x9111eb='\u0068\u006A\u006F\u006F\u0071\u0070';_0x29c7d+=`
-                        <div class="video-card" data-video-key="${_0xebd}" role="listitem">
-                            <div class="card-img-wrap">
-                                <img src="${v['\u0074\u0068\u0075\u006D\u0062\u006E\u0061\u0069\u006C']||''}" crossorigin="anonymous" alt="${_0x9eg09d(v['\u0074\u0069\u0074\u006C\u0065'])}" loading="lazy" />
-                            </div>
-                            <div class="card-body">
-                                <div class="card-title">${_0x9eg09d(v['\u0074\u0069\u0074\u006C\u0065'])}</div>
-                                <div class="card-meta">
-                                    <span>${_0x7582a(v['\u0076\u0069\u0065\u0077\u0073'])}</span>
-                                    <span class="card-author">${_0x9eg09d(v['\u0061\u0075\u0074\u0068\u006F\u0072'])}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;}_0xf88eaa['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=_0x29c7d;_0x8aa7ec();}async function _0x9_0x42f(videoKey){_0x260ce();_0xa8c['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("\u0068\u0069\u0064\u0064\u0065\u006E");_0x1575gd['\u0070\u0061\u0075\u0073\u0065']();_0x1575gd['\u0072\u0065\u006D\u006F\u0076\u0065\u0041\u0074\u0074\u0072\u0069\u0062\u0075\u0074\u0065']("\u0073\u0072\u0063");_0x1575gd['\u006C\u006F\u0061\u0064']();_0xe83cg['\u0068\u0065\u0072\u006F\u004C\u006F\u0061\u0064\u0065\u0064']=false;try{let _0xd_0xf3a;const _0x397bea=await _0xd3b7b(videoKey);_0xd_0xf3a=(674290^674289)+(139082^139082);var _0x2bc7ff=(430030^430027)+(404632^404632);const _0xba8fbc=_0x397bea['\u0072\u0065\u0073\u0075\u006C\u0074\u0073']||[];_0x2bc7ff=(127343^127341)+(178064^178068);if(!_0xba8fbc['\u006C\u0065\u006E\u0067\u0074\u0068'])throw new Error("smaerts oN".split("").reverse().join(""));var _0x1e556b=(199881^199872)+(399224^399227);const _0x24a=[..._0xba8fbc]['\u0073\u006F\u0072\u0074']((a,b)=>_0x38c0e(b['\u0071\u0075\u0061\u006C\u0069\u0074\u0079'])-_0x38c0e(a['\u0071\u0075\u0061\u006C\u0069\u0074\u0079']));_0x1e556b="bjedib".split("").reverse().join("");let _0xf4g8g;const _0x0d_0x1b7=_0x24a['\u006C\u0065\u006E\u0067\u0074\u0068']>(564475^564474)?_0x24a[375275^375274]:_0x24a[377607^377607];_0xf4g8g="bjnnbi".split("").reverse().join("");let _0x31c4d;const _0x4cb38g=_0x0d_0x1b7['\u0073\u0074\u0072\u0065\u0061\u006D\u0061\u0062\u006C\u0065\u005F\u006D\u0033\u0075\u0038']||'';_0x31c4d='\u0064\u0064\u006B\u0067\u006B\u0064';if(!_0x4cb38g)throw new Error("\u004E\u006F\u0020\u0073\u0074\u0072\u0065\u0061\u006D\u0061\u0062\u006C\u0065\u0020\u004D\u0033\u0055\u0038");let _0x4_0xd16;const _0xc2be8c=new Blob([_0x4cb38g],{'\u0074\u0079\u0070\u0065':'application/x-mpegURL'});_0x4_0xd16=(398033^398036)+(473169^473168);const _0x5ee55b=URL['\u0063\u0072\u0065\u0061\u0074\u0065\u004F\u0062\u006A\u0065\u0063\u0074\u0055\u0052\u004C'](_0xc2be8c);_0xe83cg['\u0068\u0065\u0072\u006F\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']=_0x5ee55b;if(Hls['\u0069\u0073\u0053\u0075\u0070\u0070\u006F\u0072\u0074\u0065\u0064']()){let _0xa8d9c;const _0x0317ac=new Hls({"enableWorker":!![],"lowLatencyMode":false});_0xa8d9c=(463978^463971)+(761195^761197);_0xe83cg['\u0068\u0065\u0072\u006F\u0048\u006C\u0073']=_0x0317ac;_0x0317ac['\u006C\u006F\u0061\u0064\u0053\u006F\u0075\u0072\u0063\u0065'](_0x5ee55b);_0x0317ac['\u0061\u0074\u0074\u0061\u0063\u0068\u004D\u0065\u0064\u0069\u0061'](_0x1575gd);_0x0317ac['\u006F\u006E'](Hls['\u0045\u0076\u0065\u006E\u0074\u0073']['\u004D\u0041\u004E\u0049\u0046\u0045\u0053\u0054\u005F\u0050\u0041\u0052\u0053\u0045\u0044'],()=>{_0xa8c['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("\u0068\u0069\u0064\u0064\u0065\u006E");_0xe83cg['\u0068\u0065\u0072\u006F\u004C\u006F\u0061\u0064\u0065\u0064']=!![];_0xd24fg();});_0x0317ac['\u006F\u006E'](Hls['\u0045\u0076\u0065\u006E\u0074\u0073']['\u0045\u0052\u0052\u004F\u0052'],(e,data)=>{if(data['\u0066\u0061\u0074\u0061\u006C']){console['\u0077\u0061\u0072\u006E']("\u0048\u0065\u0072\u006F\u0020\u0048\u004C\u0053\u0020\u0066\u0061\u0074\u0061\u006C\u0020\u0065\u0072\u0072\u006F\u0072");_0xa8c['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("\u0068\u0069\u0064\u0064\u0065\u006E");}});}else if(_0x1575gd['\u0063\u0061\u006E\u0050\u006C\u0061\u0079\u0054\u0079\u0070\u0065']("\u0061\u0070\u0070\u006C\u0069\u0063\u0061\u0074\u0069\u006F\u006E\u002F\u0076\u006E\u0064\u002E\u0061\u0070\u0070\u006C\u0065\u002E\u006D\u0070\u0065\u0067\u0075\u0072\u006C")){_0x1575gd['\u0073\u0072\u0063']=_0x5ee55b;_0x1575gd['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("atadatemdedaol".split("").reverse().join(""),()=>{_0xa8c['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("neddih".split("").reverse().join(""));_0xe83cg['\u0068\u0065\u0072\u006F\u004C\u006F\u0061\u0064\u0065\u0064']=!![];_0xd24fg();},{"once":!![]});_0x1575gd['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0065\u0072\u0072\u006F\u0072",()=>{_0xa8c['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("neddih".split("").reverse().join(""));},{'\u006F\u006E\u0063\u0065':!![]});}else{throw new Error("detroppus ton SLH".split("").reverse().join(""));}}catch(err){console['\u0065\u0072\u0072\u006F\u0072']("\u0048\u0065\u0072\u006F\u0020\u0076\u0069\u0064\u0065\u006F\u0020\u006C\u006F\u0061\u0064\u0020\u0065\u0072\u0072\u006F\u0072\u003A",err);_0xa8c['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("\u0068\u0069\u0064\u0064\u0065\u006E");}}function _0xd24fg(){if(_0xe83cg['\u0068\u0065\u0072\u006F\u004C\u006F\u0061\u0064\u0065\u0064']&&_0xe83cg['\u0068\u0065\u0072\u006F\u0056\u0069\u0073\u0069\u0062\u006C\u0065']&&_0xe83cg['\u0068\u0065\u0072\u006F\u0046\u006F\u0063\u0075\u0073\u0065\u0064']){_0x1575gd['\u006D\u0075\u0074\u0065\u0064']=!![];_0x1575gd['\u0070\u006C\u0061\u0079']()['\u0063\u0061\u0074\u0063\u0068'](()=>{});}else{_0x1575gd['\u0070\u0061\u0075\u0073\u0065']();}}function _0x260ce(){if(_0xe83cg['\u0068\u0065\u0072\u006F\u0048\u006C\u0073']){_0xe83cg['\u0068\u0065\u0072\u006F\u0048\u006C\u0073']['\u0064\u0065\u0073\u0074\u0072\u006F\u0079']();_0xe83cg['\u0068\u0065\u0072\u006F\u0048\u006C\u0073']=null;}if(_0xe83cg['\u0068\u0065\u0072\u006F\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']){URL['\u0072\u0065\u0076\u006F\u006B\u0065\u004F\u0062\u006A\u0065\u0063\u0074\u0055\u0052\u004C'](_0xe83cg['\u0068\u0065\u0072\u006F\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']);_0xe83cg['\u0068\u0065\u0072\u006F\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']=null;}_0x1575gd['\u0070\u0061\u0075\u0073\u0065']();_0x1575gd['\u0072\u0065\u006D\u006F\u0076\u0065\u0041\u0074\u0074\u0072\u0069\u0062\u0075\u0074\u0065']("crs".split("").reverse().join(""));_0x1575gd['\u006C\u006F\u0061\u0064']();_0xe83cg['\u0068\u0065\u0072\u006F\u004C\u006F\u0061\u0064\u0065\u0064']=false;}function _0xg4e(_0x1f84af){document['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0076\u0069\u0073\u0069\u0062\u0069\u006C\u0069\u0074\u0079\u0063\u0068\u0061\u006E\u0067\u0065",()=>{_0xe83cg['\u0068\u0065\u0072\u006F\u0046\u006F\u0063\u0075\u0073\u0065\u0064']=!document['\u0068\u0069\u0064\u0064\u0065\u006E'];if(_0xe83cg['\u0068\u0065\u0072\u006F\u0046\u006F\u0063\u0075\u0073\u0065\u0064']){_0xd24fg();}else{_0x1575gd['\u0070\u0061\u0075\u0073\u0065']();}});const _0xcg837e=new IntersectionObserver(entries=>{entries['\u0066\u006F\u0072\u0045\u0061\u0063\u0068'](entry=>{_0xe83cg['\u0068\u0065\u0072\u006F\u0056\u0069\u0073\u0069\u0062\u006C\u0065']=entry['\u0069\u0073\u0049\u006E\u0074\u0065\u0072\u0073\u0065\u0063\u0074\u0069\u006E\u0067']&&entry['\u0069\u006E\u0074\u0065\u0072\u0073\u0065\u0063\u0074\u0069\u006F\u006E\u0052\u0061\u0074\u0069\u006F']>=0.95;if(_0xe83cg['\u0068\u0065\u0072\u006F\u0056\u0069\u0073\u0069\u0062\u006C\u0065']){_0xd24fg();}else{_0x1575gd['\u0070\u0061\u0075\u0073\u0065']();}});},{'\u0074\u0068\u0072\u0065\u0073\u0068\u006F\u006C\u0064':[176778^176778,0.95,543484^543485]});_0x1f84af=(364406^364404)+(940946^940954);if(_0x6cc)_0xcg837e['\u006F\u0062\u0073\u0065\u0072\u0076\u0065'](_0x6cc);}function _0x8aa7ec(){const _0xe132bd=_0x76187e("drac-oediv.".split("").reverse().join(""));for(const _0x0fe of _0xe132bd){_0x0fe['\u0072\u0065\u006D\u006F\u0076\u0065\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u006D\u006F\u0075\u0073\u0065\u0065\u006E\u0074\u0065\u0072",_0xfd_0x439);_0x0fe['\u0072\u0065\u006D\u006F\u0076\u0065\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("evaelesuom".split("").reverse().join(""),_0x77ec9e);_0x0fe['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("retneesuom".split("").reverse().join(""),_0xfd_0x439);_0x0fe['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u006D\u006F\u0075\u0073\u0065\u006C\u0065\u0061\u0076\u0065",_0x77ec9e);}}function _0xfd_0x439(e){var _0xec_0x0c5=(245330^245335)+(701507^701508);const _0xda351g=e['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0061\u0072\u0067\u0065\u0074'];_0xec_0x0c5=(519002^519005)+(931225^931226);const _0xa6b3ea=_0xda351g['\u0064\u0061\u0074\u0061\u0073\u0065\u0074']['\u0076\u0069\u0064\u0065\u006F\u004B\u0065\u0079'];if(!_0xa6b3ea)return;clearTimeout(_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0054\u0069\u006D\u0065\u006F\u0075\u0074']);_0xda6dca(_0xa6b3ea,_0xda351g);}function _0x77ec9e(){_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0054\u0069\u006D\u0065\u006F\u0075\u0074']=setTimeout(()=>{_0x1f0d();},666565^666451);}function _0xda6dca(videoKey,card){if(_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0043\u0061\u0072\u0064']===card&&_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0056\u0069\u0064\u0065\u006F\u004B\u0065\u0079']===videoKey)return;if(_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0043\u0061\u0072\u0064'])_0x1f0d();_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0043\u0061\u0072\u0064']=card;_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0056\u0069\u0064\u0065\u006F\u004B\u0065\u0079']=videoKey;var _0xb_0x179=(771649^771652)+(425858^425860);const _0x6b29c=card['\u0071\u0075\u0065\u0072\u0079\u0053\u0065\u006C\u0065\u0063\u0074\u006F\u0072']("\u002E\u0063\u0061\u0072\u0064\u002D\u0069\u006D\u0067\u002D\u0077\u0072\u0061\u0070");_0xb_0x179='\u006B\u006C\u0061\u0062\u0065\u006E';if(!_0x6b29c)return;_0x6b29c['\u0061\u0070\u0070\u0065\u006E\u0064\u0043\u0068\u0069\u006C\u0064'](_0x93fd5c);_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u0064\u0069\u0073\u0070\u006C\u0061\u0079']="kcolb".split("").reverse().join("");_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u0070\u006F\u0073\u0069\u0074\u0069\u006F\u006E']="\u0061\u0062\u0073\u006F\u006C\u0075\u0074\u0065";_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u0074\u006F\u0070']="\u0030";_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u006C\u0065\u0066\u0074']="\u0030";_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u0077\u0069\u0064\u0074\u0068']="%001".split("").reverse().join("");_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u0068\u0065\u0069\u0067\u0068\u0074']="%001".split("").reverse().join("");_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u006F\u0062\u006A\u0065\u0063\u0074\u0046\u0069\u0074']="\u0063\u006F\u0076\u0065\u0072";_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u0062\u006F\u0072\u0064\u0065\u0072\u0052\u0061\u0064\u0069\u0075\u0073']="\u0030";_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u007A\u0049\u006E\u0064\u0065\u0078']="\u0035";_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u0070\u006F\u0069\u006E\u0074\u0065\u0072\u0045\u0076\u0065\u006E\u0074\u0073']="\u006E\u006F\u006E\u0065";_0xd3b7b(videoKey)['\u0074\u0068\u0065\u006E'](data=>{let _0x5_0xbc1;const _0x1d07c=data['\u0072\u0065\u0073\u0075\u006C\u0074\u0073']||[];_0x5_0xbc1=352245^352245;if(!_0x1d07c['\u006C\u0065\u006E\u0067\u0074\u0068'])throw new Error("smaerts oN".split("").reverse().join(""));let _0x4cfd4b;const _0xb6a=[..._0x1d07c]['\u0073\u006F\u0072\u0074']((a,b)=>_0x38c0e(a['\u0071\u0075\u0061\u006C\u0069\u0074\u0079'])-_0x38c0e(b['\u0071\u0075\u0061\u006C\u0069\u0074\u0079']));_0x4cfd4b=(458721^458728)+(669269^669267);var _0xdbcd=(243125^243122)+(945668^945669);const _0x785cg=_0xb6a[588736^588736];_0xdbcd=957401^957393;const _0x25a59f=_0x785cg['\u0073\u0074\u0072\u0065\u0061\u006D\u0061\u0062\u006C\u0065\u005F\u006D\u0033\u0075\u0038']||'';if(!_0x25a59f)throw new Error("8U3M oN".split("").reverse().join(""));let _0x80f;const _0x17_0xec4=new Blob([_0x25a59f],{'\u0074\u0079\u0070\u0065':'application/x-mpegURL'});_0x80f=(167640^167641)+(826667^826664);var _0x119f2f=(541972^541981)+(305440^305448);const _0xd748g=URL['\u0063\u0072\u0065\u0061\u0074\u0065\u004F\u0062\u006A\u0065\u0063\u0074\u0055\u0052\u004C'](_0x17_0xec4);_0x119f2f="ibnjbj".split("").reverse().join("");_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']=_0xd748g;if(Hls['\u0069\u0073\u0053\u0075\u0070\u0070\u006F\u0072\u0074\u0065\u0064']()){const _0x93aa=new Hls({'\u0065\u006E\u0061\u0062\u006C\u0065\u0057\u006F\u0072\u006B\u0065\u0072':!![],'\u006C\u006F\u0077\u004C\u0061\u0074\u0065\u006E\u0063\u0079\u004D\u006F\u0064\u0065':false});_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0048\u006C\u0073']=_0x93aa;_0x93aa['\u006C\u006F\u0061\u0064\u0053\u006F\u0075\u0072\u0063\u0065'](_0xd748g);_0x93aa['\u0061\u0074\u0074\u0061\u0063\u0068\u004D\u0065\u0064\u0069\u0061'](_0x93fd5c);_0x93aa['\u006F\u006E'](Hls['\u0045\u0076\u0065\u006E\u0074\u0073']['\u004D\u0041\u004E\u0049\u0046\u0045\u0053\u0054\u005F\u0050\u0041\u0052\u0053\u0045\u0044'],()=>{_0x93fd5c['\u006D\u0075\u0074\u0065\u0064']=!![];_0x93fd5c['\u0070\u006C\u0061\u0079\u0062\u0061\u0063\u006B\u0052\u0061\u0074\u0065']=156250^156248;_0x93fd5c['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("atadatemdedaol".split("").reverse().join(""),function onMetadata(){_0x93fd5c['\u0072\u0065\u006D\u006F\u0076\u0065\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("atadatemdedaol".split("").reverse().join(""),onMetadata);var _0x6fec=(937701^937696)+(329141^329138);const _0xba6b=_0x93fd5c['\u0064\u0075\u0072\u0061\u0074\u0069\u006F\u006E']||932117^932117;_0x6fec=(809578^809570)+(525790^525782);if(_0xba6b>(974355^974355)){_0x93fd5c['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']=_0xba6b*0.5;}});if(_0x93fd5c['\u0072\u0065\u0061\u0064\u0079\u0053\u0074\u0061\u0074\u0065']>=(721564^721565)){_0x93fd5c['\u0064\u0069\u0073\u0070\u0061\u0074\u0063\u0068\u0045\u0076\u0065\u006E\u0074'](new Event("atadatemdedaol".split("").reverse().join("")));}_0x93fd5c['\u0070\u006C\u0061\u0079']()['\u0063\u0061\u0074\u0063\u0068'](()=>{});});_0x93aa['\u006F\u006E'](Hls['\u0045\u0076\u0065\u006E\u0074\u0073']['\u0045\u0052\u0052\u004F\u0052'],(e,data)=>{if(data['\u0066\u0061\u0074\u0061\u006C'])_0x1f0d();});}else if(_0x93fd5c['\u0063\u0061\u006E\u0050\u006C\u0061\u0079\u0054\u0079\u0070\u0065']("lrugepm.elppa.dnv/noitacilppa".split("").reverse().join(""))){_0x93fd5c['\u0073\u0072\u0063']=_0xd748g;_0x93fd5c['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u006C\u006F\u0061\u0064\u0065\u0064\u006D\u0065\u0074\u0061\u0064\u0061\u0074\u0061",()=>{let _0xed7c7e;const dur=_0x93fd5c['\u0064\u0075\u0072\u0061\u0074\u0069\u006F\u006E']||808744^808744;_0xed7c7e=(309272^309272)+(727884^727887);_0x93fd5c['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']=dur*0.5;_0x93fd5c['\u006D\u0075\u0074\u0065\u0064']=!![];_0x93fd5c['\u0070\u006C\u0061\u0079\u0062\u0061\u0063\u006B\u0052\u0061\u0074\u0065']=649148^649150;_0x93fd5c['\u0070\u006C\u0061\u0079']()['\u0063\u0061\u0074\u0063\u0068'](()=>{});},{'\u006F\u006E\u0063\u0065':!![]});_0x93fd5c['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0065\u0072\u0072\u006F\u0072",()=>_0x1f0d(),{'\u006F\u006E\u0063\u0065':!![]});}else{throw new Error("detroppus ton SLH".split("").reverse().join(""));}})['\u0063\u0061\u0074\u0063\u0068'](err=>{console['\u0077\u0061\u0072\u006E']("\u0050\u0072\u0065\u0076\u0069\u0065\u0077\u0020\u0065\u0072\u0072\u006F\u0072\u003A",err);_0x1f0d();});}function _0x1f0d(){clearTimeout(_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0054\u0069\u006D\u0065\u006F\u0075\u0074']);if(_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0048\u006C\u0073']){_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0048\u006C\u0073']['\u0064\u0065\u0073\u0074\u0072\u006F\u0079']();_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0048\u006C\u0073']=null;}if(_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']){URL['\u0072\u0065\u0076\u006F\u006B\u0065\u004F\u0062\u006A\u0065\u0063\u0074\u0055\u0052\u004C'](_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']);_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']=null;}_0x93fd5c['\u0070\u0061\u0075\u0073\u0065']();_0x93fd5c['\u0072\u0065\u006D\u006F\u0076\u0065\u0041\u0074\u0074\u0072\u0069\u0062\u0075\u0074\u0065']("\u0073\u0072\u0063");_0x93fd5c['\u006C\u006F\u0061\u0064']();_0x93fd5c['\u0073\u0074\u0079\u006C\u0065']['\u0064\u0069\u0073\u0070\u006C\u0061\u0079']="enon".split("").reverse().join("");if(_0x93fd5c['\u0070\u0061\u0072\u0065\u006E\u0074\u004E\u006F\u0064\u0065']){_0x93fd5c['\u0070\u0061\u0072\u0065\u006E\u0074\u004E\u006F\u0064\u0065']['\u0072\u0065\u006D\u006F\u0076\u0065\u0043\u0068\u0069\u006C\u0064'](_0x93fd5c);}document['\u0062\u006F\u0064\u0079']['\u0061\u0070\u0070\u0065\u006E\u0064\u0043\u0068\u0069\u006C\u0064'](_0x93fd5c);_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0056\u0069\u0064\u0065\u006F\u004B\u0065\u0079']=null;_0xe83cg['\u0070\u0072\u0065\u0076\u0069\u0065\u0077\u0043\u0061\u0072\u0064']=null;}function _0xaafd6c(){_0x7f8ae['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("slortnoc-wohs".split("").reverse().join(""));_0xg193af();}function _0xe7d69b(){_0x7f8ae['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("\u0073\u0068\u006F\u0077\u002D\u0063\u006F\u006E\u0074\u0072\u006F\u006C\u0073");clearTimeout(_0xe83cg['\u0063\u006F\u006E\u0074\u0072\u006F\u006C\u0073\u0054\u0069\u006D\u0065\u0072']);}function _0xg193af(){clearTimeout(_0xe83cg['\u0063\u006F\u006E\u0074\u0072\u006F\u006C\u0073\u0054\u0069\u006D\u0065\u0072']);_0xe83cg['\u0063\u006F\u006E\u0074\u0072\u006F\u006C\u0073\u0054\u0069\u006D\u0065\u0072']=setTimeout(()=>{if(!_0x69ggd['\u0070\u0061\u0075\u0073\u0065\u0064']&&!_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']){_0xe7d69b();}},184608^185032);}function _0xab_0x0b3(){if(_0x7f8ae['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0063\u006F\u006E\u0074\u0061\u0069\u006E\u0073']("slortnoc-wohs".split("").reverse().join(""))){_0xe7d69b();}else{_0xaafd6c();}}async function _0x722fc(){try{if(!document['\u0066\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E\u0045\u006C\u0065\u006D\u0065\u006E\u0074']){await _0x7f8ae['\u0072\u0065\u0071\u0075\u0065\u0073\u0074\u0046\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E']();if(screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']&&screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']['\u006C\u006F\u0063\u006B']){try{await screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']['\u006C\u006F\u0063\u006B']("epacsdnal".split("").reverse().join(""));}catch(orientErr){console['\u0077\u0061\u0072\u006E'](":detroppus ton kcol noitatneirO".split("").reverse().join(""),orientErr);}}_0xe83cg['\u0069\u0073\u0046\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E']=!![];_0xaafd6c();}else{await document['\u0065\u0078\u0069\u0074\u0046\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E']();if(screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']&&screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']['\u0075\u006E\u006C\u006F\u0063\u006B']){try{screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']['\u0075\u006E\u006C\u006F\u0063\u006B']();}catch(orientErr){console['\u0077\u0061\u0072\u006E']("\u004F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E\u0020\u0075\u006E\u006C\u006F\u0063\u006B\u0020\u006E\u006F\u0074\u0020\u0073\u0075\u0070\u0070\u006F\u0072\u0074\u0065\u0064\u003A",orientErr);}}_0xe83cg['\u0069\u0073\u0046\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E']=false;_0xe7d69b();}}catch(err){console['\u0077\u0061\u0072\u006E'](":rorre neercslluF".split("").reverse().join(""),err);}}function _0x741e7e(query,results){_0xe83cg['\u0069\u0073\u0053\u0065\u0061\u0072\u0063\u0068\u0069\u006E\u0067']=!![];_0xe83cg['\u0073\u0065\u0061\u0072\u0063\u0068\u0052\u0065\u0073\u0075\u006C\u0074\u0073']=results||[];_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0051\u0075\u0065\u0072\u0079']=query;_0x6cc['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("\u0068\u0069\u0064\u0064\u0065\u006E");_0x260ce();_0x85b15e['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=`SEARCH: <span class="title-query">${_0xc99fda(query)}</span>`;if(!results||!results['\u006C\u0065\u006E\u0067\u0074\u0068']){_0xf88eaa['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=`<div class="no-results"><span>🔍</span>No results for "${_0xc99fda(query)}"</div>`;return;}_0xe9da1f(results);}function _0xa_0x594(){if(_0xe83cg['\u0068\u006F\u006D\u0065\u0070\u0061\u0067\u0065\u0044\u0061\u0074\u0061']){_0xcd5de({'\u0072\u0065\u0073\u0075\u006C\u0074\u0073':_0xe83cg['\u0068\u006F\u006D\u0065\u0070\u0061\u0067\u0065\u0044\u0061\u0074\u0061']});}else{_0x35d();}_0xe2a['\u0076\u0061\u006C\u0075\u0065']='';if(_0xe83cg['\u0069\u0073\u0050\u006C\u0061\u0079\u0065\u0072\u004F\u0070\u0065\u006E'])_0xe58fbc();}async function _0x35d(){_0xec1gfb(280676^280684);try{const _0xf7ce=await _0x2f_0x82c();_0xcd5de(_0xf7ce);}catch(err){console['\u0065\u0072\u0072\u006F\u0072'](":egapemoh daol ot deliaF".split("").reverse().join(""),err);_0x6cc['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("neddih".split("").reverse().join(""));_0x85b15e['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']="\u26A0\uFE0F\u0020\u0045\u0072\u0072\u006F\u0072\u0020\u006C\u006F\u0061\u0064\u0069\u006E\u0067\u0020\u0076\u0069\u0064\u0065\u006F\u0073";_0xf88eaa['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=`<div class="no-results"><span>⚠️</span>Could not load videos. Please try again later.</div>`;}}async function _0xbfe37a(rawQuery){var _0xe85g=(151831^151829)+(895876^895884);const q=rawQuery['\u0074\u0072\u0069\u006D']();_0xe85g=302889^302881;if(!q){_0xa_0x594();return;}_0xec1gfb(227965^227957);try{var _0x7bb60a=(493923^493927)+(702780^702777);const _0x5e13a=await _0x8_0xa03(q);_0x7bb60a=(227779^227782)+(193431^193439);_0x741e7e(q,_0x5e13a['\u0072\u0065\u0073\u0075\u006C\u0074\u0073']||[]);}catch(err){console['\u0065\u0072\u0072\u006F\u0072'](":deliaf hcraeS".split("").reverse().join(""),err);_0x6cc['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("neddih".split("").reverse().join(""));_0x85b15e['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=`SEARCH: <span class="title-query">${_0xc99fda(q)}</span>`;_0xf88eaa['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=`<div class="no-results"><span>⚠️</span>Search failed. Please try again.</div>`;}}async function _0x86eag(videoKey){if(_0xe83cg['\u0069\u0073\u0050\u006C\u0061\u0079\u0065\u0072\u004F\u0070\u0065\u006E']){_0xe58fbc();await new Promise(r=>setTimeout(r,955892^955746));}_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0056\u0069\u0064\u0065\u006F\u004B\u0065\u0079']=videoKey;_0xe83cg['\u0069\u0073\u0050\u006C\u0061\u0079\u0065\u0072\u004F\u0070\u0065\u006E']=!![];_0x35b3bc['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("\u006F\u0070\u0065\u006E");_0x7fb38g['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("\u0073\u0068\u006F\u0077");_0x69ggd['\u0070\u0061\u0075\u0073\u0065']();_0x69ggd['\u0072\u0065\u006D\u006F\u0076\u0065\u0041\u0074\u0074\u0072\u0069\u0062\u0075\u0074\u0065']("\u0073\u0072\u0063");_0x69ggd['\u006C\u006F\u0061\u0064']();_0xae107a(false);_0x32363d['\u0073\u0074\u0079\u006C\u0065']['\u0077\u0069\u0064\u0074\u0068']="\u0030\u0025";_0xdef['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']="\u0030\u0030\u003A\u0030\u0030\u0020\u002F\u0020\u0030\u0030\u003A\u0030\u0030";_0xf3216f['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']="\u003C\u006F\u0070\u0074\u0069\u006F\u006E\u0020\u0076\u0061\u006C\u0075\u0065\u003D\u0022\u0022\u003E\u0041\u0075\u0074\u006F\u003C\u002F\u006F\u0070\u0074\u0069\u006F\u006E\u003E";try{let _0x01df1f;const _0xc3d2=await _0xd3b7b(videoKey);_0x01df1f="kbnank".split("").reverse().join("");var _0xd5436d=(965975^965970)+(992625^992628);const _0x0fae=_0xc3d2['\u0072\u0065\u0073\u0075\u006C\u0074\u0073']||[];_0xd5436d=916318^916311;if(!_0x0fae['\u006C\u0065\u006E\u0067\u0074\u0068'])throw new Error("elbaliava smaerts oN".split("").reverse().join(""));const _0xd5dabb=[..._0x0fae]['\u0073\u006F\u0072\u0074']((a,b)=>_0x38c0e(a['\u0071\u0075\u0061\u006C\u0069\u0074\u0079'])-_0x38c0e(b['\u0071\u0075\u0061\u006C\u0069\u0074\u0079']));_0xe83cg['\u0071\u0075\u0061\u006C\u0069\u0074\u0069\u0065\u0073']=_0xd5dabb;_0xf3216f['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=">noitpo/<otuA>\"\"=eulav noitpo<".split("").reverse().join("");for(const q of _0xd5dabb){let _0x3f2ec;const _0xc133dc=q['\u0071\u0075\u0061\u006C\u0069\u0074\u0079']||"\u0055\u006E\u006B\u006E\u006F\u0077\u006E";_0x3f2ec="jooljf".split("").reverse().join("");const _0x77a=document['\u0063\u0072\u0065\u0061\u0074\u0065\u0045\u006C\u0065\u006D\u0065\u006E\u0074']("\u006F\u0070\u0074\u0069\u006F\u006E");_0x77a['\u0076\u0061\u006C\u0075\u0065']=_0xc133dc;_0x77a['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']=_0xc133dc;_0xf3216f['\u0061\u0070\u0070\u0065\u006E\u0064\u0043\u0068\u0069\u006C\u0064'](_0x77a);}const _0xbec6fg=_0x0fae[333111^333111];const _0x24dec=_0xbec6fg['\u0073\u0074\u0072\u0065\u0061\u006D\u0061\u0062\u006C\u0065\u005F\u006D\u0033\u0075\u0038']||'';if(!_0x24dec)throw new Error("\u004E\u006F\u0020\u0073\u0074\u0072\u0065\u0061\u006D\u0061\u0062\u006C\u0065\u0020\u004D\u0033\u0055\u0038\u0020\u0066\u006F\u0075\u006E\u0064");await _0x9ec3de(_0x24dec);}catch(err){console['\u0065\u0072\u0072\u006F\u0072']("\u0050\u006C\u0061\u0079\u0065\u0072\u0020\u0065\u0072\u0072\u006F\u0072\u003A",err);_0x7fb38g['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("wohs".split("").reverse().join(""));alert("\u0055\u006E\u0061\u0062\u006C\u0065\u0020\u0074\u006F\u0020\u0070\u006C\u0061\u0079\u0020\u0074\u0068\u0069\u0073\u0020\u0076\u0069\u0064\u0065\u006F\u002E\u0020\u0050\u006C\u0065\u0061\u0073\u0065\u0020\u0074\u0072\u0079\u0020\u0061\u0067\u0061\u0069\u006E\u002E");_0xe58fbc();}}function _0x9ec3de(m3u8Content){return new Promise((resolve,reject)=>{try{if(_0xe83cg['\u0068\u006C\u0073\u0049\u006E\u0073\u0074\u0061\u006E\u0063\u0065']){_0xe83cg['\u0068\u006C\u0073\u0049\u006E\u0073\u0074\u0061\u006E\u0063\u0065']['\u0064\u0065\u0073\u0074\u0072\u006F\u0079']();_0xe83cg['\u0068\u006C\u0073\u0049\u006E\u0073\u0074\u0061\u006E\u0063\u0065']=null;}if(_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']){URL['\u0072\u0065\u0076\u006F\u006B\u0065\u004F\u0062\u006A\u0065\u0063\u0074\u0055\u0052\u004C'](_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']);_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']=null;}var _0x77ae=(724791^724785)+(885596^885597);const _0x2cd14g=new Blob([m3u8Content],{'\u0074\u0079\u0070\u0065':'application/x-mpegURL'});_0x77ae=933608^933609;let _0xe747g;const _0xbe_0x375=URL['\u0063\u0072\u0065\u0061\u0074\u0065\u004F\u0062\u006A\u0065\u0063\u0074\u0055\u0052\u004C'](_0x2cd14g);_0xe747g=635850^635851;_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']=_0xbe_0x375;if(Hls['\u0069\u0073\u0053\u0075\u0070\u0070\u006F\u0072\u0074\u0065\u0064']()){const _0xc105e=new Hls({"enableWorker":!![],'\u006C\u006F\u0077\u004C\u0061\u0074\u0065\u006E\u0063\u0079\u004D\u006F\u0064\u0065':false});_0xe83cg['\u0068\u006C\u0073\u0049\u006E\u0073\u0074\u0061\u006E\u0063\u0065']=_0xc105e;_0xc105e['\u006C\u006F\u0061\u0064\u0053\u006F\u0075\u0072\u0063\u0065'](_0xbe_0x375);_0xc105e['\u0061\u0074\u0074\u0061\u0063\u0068\u004D\u0065\u0064\u0069\u0061'](_0x69ggd);_0xc105e['\u006F\u006E'](Hls['\u0045\u0076\u0065\u006E\u0074\u0073']['\u004D\u0041\u004E\u0049\u0046\u0045\u0053\u0054\u005F\u0050\u0041\u0052\u0053\u0045\u0044'],()=>{_0x7fb38g['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("\u0073\u0068\u006F\u0077");_0x69ggd['\u0070\u006C\u0061\u0079']()['\u0063\u0061\u0074\u0063\u0068'](()=>{});_0xaafd6c();resolve();});_0xc105e['\u006F\u006E'](Hls['\u0045\u0076\u0065\u006E\u0074\u0073']['\u0045\u0052\u0052\u004F\u0052'],(e,data)=>{if(data['\u0066\u0061\u0074\u0061\u006C'])reject(new Error("\u0048\u004C\u0053\u0020\u0066\u0061\u0074\u0061\u006C\u0020\u0065\u0072\u0072\u006F\u0072"));});}else if(_0x69ggd['\u0063\u0061\u006E\u0050\u006C\u0061\u0079\u0054\u0079\u0070\u0065']("lrugepm.elppa.dnv/noitacilppa".split("").reverse().join(""))){_0x69ggd['\u0073\u0072\u0063']=_0xbe_0x375;_0x69ggd['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("atadatemdedaol".split("").reverse().join(""),()=>{_0x7fb38g['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("wohs".split("").reverse().join(""));_0x69ggd['\u0070\u006C\u0061\u0079']()['\u0063\u0061\u0074\u0063\u0068'](()=>{});_0xaafd6c();resolve();},{"once":!![]});_0x69ggd['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0065\u0072\u0072\u006F\u0072",()=>reject(new Error("\u0056\u0069\u0064\u0065\u006F\u0020\u006C\u006F\u0061\u0064\u0020\u0065\u0072\u0072\u006F\u0072")),{'\u006F\u006E\u0063\u0065':!![]});}else{reject(new Error("\u0048\u004C\u0053\u0020\u006E\u006F\u0074\u0020\u0073\u0075\u0070\u0070\u006F\u0072\u0074\u0065\u0064"));}}catch(err){reject(err);}});}function _0xe58fbc(){if(_0xe83cg['\u0068\u006C\u0073\u0049\u006E\u0073\u0074\u0061\u006E\u0063\u0065']){_0xe83cg['\u0068\u006C\u0073\u0049\u006E\u0073\u0074\u0061\u006E\u0063\u0065']['\u0064\u0065\u0073\u0074\u0072\u006F\u0079']();_0xe83cg['\u0068\u006C\u0073\u0049\u006E\u0073\u0074\u0061\u006E\u0063\u0065']=null;}if(_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']){URL['\u0072\u0065\u0076\u006F\u006B\u0065\u004F\u0062\u006A\u0065\u0063\u0074\u0055\u0052\u004C'](_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']);_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0053\u0074\u0072\u0065\u0061\u006D\u0055\u0072\u006C']=null;}_0x69ggd['\u0070\u0061\u0075\u0073\u0065']();_0x69ggd['\u0072\u0065\u006D\u006F\u0076\u0065\u0041\u0074\u0074\u0072\u0069\u0062\u0075\u0074\u0065']("\u0073\u0072\u0063");_0x69ggd['\u006C\u006F\u0061\u0064']();_0xe83cg['\u0069\u0073\u0050\u006C\u0061\u0079\u0065\u0072\u004F\u0070\u0065\u006E']=false;_0xe83cg['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0056\u0069\u0064\u0065\u006F\u004B\u0065\u0079']=null;_0xe83cg['\u0071\u0075\u0061\u006C\u0069\u0074\u0069\u0065\u0073']=[];_0x35b3bc['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("nepo".split("").reverse().join(""));_0x7fb38g['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("\u0073\u0068\u006F\u0077");_0xe7d69b();if(document['\u0066\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E\u0045\u006C\u0065\u006D\u0065\u006E\u0074']){document['\u0065\u0078\u0069\u0074\u0046\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E']()['\u0063\u0061\u0074\u0063\u0068'](()=>{});if(screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']&&screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']['\u0075\u006E\u006C\u006F\u0063\u006B']){try{screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']['\u0075\u006E\u006C\u006F\u0063\u006B']();}catch(e){}}}_0xe83cg['\u0069\u0073\u0046\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E']=false;}function _0x9ee31f(){if(_0x69ggd['\u0070\u0061\u0075\u0073\u0065\u0064'])_0x69ggd['\u0070\u006C\u0061\u0079']()['\u0063\u0061\u0074\u0063\u0068'](()=>{});else _0x69ggd['\u0070\u0061\u0075\u0073\u0065']();}function _0xae107a(playing){_0xe83cg['\u0069\u0073\u0050\u006C\u0061\u0079\u0069\u006E\u0067']=playing;const _0xc82g2f=_0x4g6f5b['\u0071\u0075\u0065\u0072\u0079\u0053\u0065\u006C\u0065\u0063\u0074\u006F\u0072']("\u0073\u0076\u0067");if(playing){_0xc82g2f['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']="\u003C\u0072\u0065\u0063\u0074\u0020\u0078\u003D\u0022\u0036\u0022\u0020\u0079\u003D\u0022\u0034\u0022\u0020\u0077\u0069\u0064\u0074\u0068\u003D\u0022\u0034\u0022\u0020\u0068\u0065\u0069\u0067\u0068\u0074\u003D\u0022\u0031\u0036\u0022\u002F\u003E\u003C\u0072\u0065\u0063\u0074\u0020\u0078\u003D\u0022\u0031\u0034\u0022\u0020\u0079\u003D\u0022\u0034\u0022\u0020\u0077\u0069\u0064\u0074\u0068\u003D\u0022\u0034\u0022\u0020\u0068\u0065\u0069\u0067\u0068\u0074\u003D\u0022\u0031\u0036\u0022\u002F\u003E";}else{_0xc82g2f['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']="\u003C\u0070\u006F\u006C\u0079\u0067\u006F\u006E\u0020\u0070\u006F\u0069\u006E\u0074\u0073\u003D\u0022\u0035\u002C\u0033\u0020\u0031\u0039\u002C\u0031\u0032\u0020\u0035\u002C\u0032\u0031\u0022\u002F\u003E";}}function _0x7e12e(){const _0x19_0xb7a=_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']||785086^785086;const _0x67f51d=_0x69ggd['\u0064\u0075\u0072\u0061\u0074\u0069\u006F\u006E']||498951^498951;_0xdef['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']=_0x35fc(_0x19_0xb7a)+"\u0020\u002F\u0020"+_0x35fc(_0x67f51d);if(!_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']&&_0x67f51d){var _0x98f=(886204^886203)+(816510^816503);const _0xe4bd=_0x19_0xb7a/_0x67f51d*(477953^478053);_0x98f=(330171^330174)+(901077^901075);_0x32363d['\u0073\u0074\u0079\u006C\u0065']['\u0077\u0069\u0064\u0074\u0068']=Math['\u006D\u0069\u006E'](_0xe4bd,391464^391500)+"\u0025";_0xd51dac['\u0073\u0065\u0074\u0041\u0074\u0074\u0072\u0069\u0062\u0075\u0074\u0065']("\u0061\u0072\u0069\u0061\u002D\u0076\u0061\u006C\u0075\u0065\u006E\u006F\u0077",Math['\u0072\u006F\u0075\u006E\u0064'](_0xe4bd));}}function _0x46ce(e,_0xbd386b){var _0x203g4e=(273818^273816)+(894619^894611);const _0xf52a=_0xd51dac['\u0067\u0065\u0074\u0042\u006F\u0075\u006E\u0064\u0069\u006E\u0067\u0043\u006C\u0069\u0065\u006E\u0074\u0052\u0065\u0063\u0074']();_0x203g4e=(149910^149910)+(110479^110474);const x=(e['\u0063\u006C\u0069\u0065\u006E\u0074\u0058']||e['\u0070\u0061\u0067\u0065\u0058'])-_0xf52a['\u006C\u0065\u0066\u0074'];_0xbd386b=456850^456848;var _0x4dc21a=(454251^454251)+(866584^866588);const _0x20_0x7e1=Math['\u006D\u0061\u0078'](497982^497982,Math['\u006D\u0069\u006E'](510104^510105,x/_0xf52a['\u0077\u0069\u0064\u0074\u0068']));_0x4dc21a="agiale".split("").reverse().join("");const _0xf4_0xb7d=_0x69ggd['\u0064\u0075\u0072\u0061\u0074\u0069\u006F\u006E']||480494^480494;const _0x1f27e=_0x20_0x7e1*_0xf4_0xb7d;_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']=_0x1f27e;_0x32363d['\u0073\u0074\u0079\u006C\u0065']['\u0077\u0069\u0064\u0074\u0068']=_0x20_0x7e1*(854049^854085)+"\u0025";_0xd51dac['\u0073\u0065\u0074\u0041\u0074\u0074\u0072\u0069\u0062\u0075\u0074\u0065']("\u0061\u0072\u0069\u0061\u002D\u0076\u0061\u006C\u0075\u0065\u006E\u006F\u0077",Math['\u0072\u006F\u0075\u006E\u0064'](_0x20_0x7e1*(819410^819382)));_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']=false;}function _0xfd2(val){const v=Math['\u006D\u0061\u0078'](127531^127531,Math['\u006D\u0069\u006E'](343198^343199,val));_0xe83cg['\u0076\u006F\u006C\u0075\u006D\u0065']=v;_0xe83cg['\u0069\u0073\u004D\u0075\u0074\u0065\u0064']=v===(176422^176422);_0x69ggd['\u0076\u006F\u006C\u0075\u006D\u0065']=v;_0x69ggd['\u006D\u0075\u0074\u0065\u0064']=_0xe83cg['\u0069\u0073\u004D\u0075\u0074\u0065\u0064'];_0x431a['\u0076\u0061\u006C\u0075\u0065']=v;_0xee9d4a();}function _0x69gc1d(){_0xe83cg['\u0069\u0073\u004D\u0075\u0074\u0065\u0064']=!_0xe83cg['\u0069\u0073\u004D\u0075\u0074\u0065\u0064'];if(_0xe83cg['\u0069\u0073\u004D\u0075\u0074\u0065\u0064']){_0x69ggd['\u0076\u006F\u006C\u0075\u006D\u0065']=705359^705359;_0x69ggd['\u006D\u0075\u0074\u0065\u0064']=!![];_0x431a['\u0076\u0061\u006C\u0075\u0065']=131030^131030;}else{_0x69ggd['\u0076\u006F\u006C\u0075\u006D\u0065']=_0xe83cg['\u0076\u006F\u006C\u0075\u006D\u0065']||0.8;_0x69ggd['\u006D\u0075\u0074\u0065\u0064']=false;_0x431a['\u0076\u0061\u006C\u0075\u0065']=_0xe83cg['\u0076\u006F\u006C\u0075\u006D\u0065']||0.8;}_0xee9d4a();}function _0xee9d4a(){const _0x036f4b=_0x5ecf['\u0071\u0075\u0065\u0072\u0079\u0053\u0065\u006C\u0065\u0063\u0074\u006F\u0072']("\u0073\u0076\u0067");if(_0xe83cg['\u0069\u0073\u004D\u0075\u0074\u0065\u0064']||_0x69ggd['\u0076\u006F\u006C\u0075\u006D\u0065']===(672652^672652)){_0x036f4b['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=">/\"51\"=2y \"32\"=2x \"9\"=1y \"71\"=1x enil<>/\"51\"=2y \"71\"=2x \"9\"=1y \"32\"=1x enil<>/\"91,11 51,6 51,2 9,2 9,6 5,11\"=stniop nogylop<".split("").reverse().join("");}else if(_0x69ggd['\u0076\u006F\u006C\u0075\u006D\u0065']<0.5){_0x036f4b['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']="\u003C\u0070\u006F\u006C\u0079\u0067\u006F\u006E\u0020\u0070\u006F\u0069\u006E\u0074\u0073\u003D\u0022\u0031\u0031\u002C\u0035\u0020\u0036\u002C\u0039\u0020\u0032\u002C\u0039\u0020\u0032\u002C\u0031\u0035\u0020\u0036\u002C\u0031\u0035\u0020\u0031\u0031\u002C\u0031\u0039\u0022\u002F\u003E\u003C\u0070\u0061\u0074\u0068\u0020\u0064\u003D\u0022\u004D\u0031\u0037\u002E\u0035\u0020\u0038\u002E\u0035\u0061\u0034\u0020\u0034\u0020\u0030\u0020\u0030\u0020\u0031\u0020\u0030\u0020\u0037\u0022\u002F\u003E";}else{_0x036f4b['\u0069\u006E\u006E\u0065\u0072\u0048\u0054\u004D\u004C']=">/\"70.7 0 1 0 0 5 5a64.8 45.51M\"=d htap<>/\"41.41 0 1 0 0 01 01a39.4 70.91M\"=d htap<>/\"91,11 51,6 51,2 9,2 9,6 5,11\"=stniop nogylop<".split("").reverse().join("");}}function _0x10_0x4a5(qualityLabel,_0x6_0xfad){if(!_0xe83cg['\u0071\u0075\u0061\u006C\u0069\u0074\u0069\u0065\u0073']['\u006C\u0065\u006E\u0067\u0074\u0068'])return;let _0x56a0e=_0xe83cg['\u0071\u0075\u0061\u006C\u0069\u0074\u0069\u0065\u0073']['\u0066\u0069\u006E\u0064'](q=>q['\u0071\u0075\u0061\u006C\u0069\u0074\u0079']===qualityLabel);if(!_0x56a0e)_0x56a0e=_0xe83cg['\u0071\u0075\u0061\u006C\u0069\u0074\u0069\u0065\u0073'][827702^827702];const _0x5b5c5a=_0x56a0e['\u0073\u0074\u0072\u0065\u0061\u006D\u0061\u0062\u006C\u0065\u005F\u006D\u0033\u0075\u0038']||'';if(!_0x5b5c5a)return;const _0x4e710f=_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']||251868^251868;const _0x59gb=!_0x69ggd['\u0070\u0061\u0075\u0073\u0065\u0064'];_0x6_0xfad="hjildd".split("").reverse().join("");_0x7fb38g['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("wohs".split("").reverse().join(""));_0x9ec3de(_0x5b5c5a)['\u0074\u0068\u0065\u006E'](()=>{_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']=_0x4e710f;if(_0x59gb)_0x69ggd['\u0070\u006C\u0061\u0079']()['\u0063\u0061\u0074\u0063\u0068'](()=>{});_0x7fb38g['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("\u0073\u0068\u006F\u0077");_0xaafd6c();})['\u0063\u0061\u0074\u0063\u0068'](()=>_0x7fb38g['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("\u0073\u0068\u006F\u0077"));}_0x40a89c=181196^181196;let _0x6f78d=null;function _0x088a0d(e){var _0x662d=(436110^436103)+(877910^877906);const _0x4c5b=e['\u0063\u0068\u0061\u006E\u0067\u0065\u0064\u0054\u006F\u0075\u0063\u0068\u0065\u0073'][539536^539536];_0x662d='\u0070\u0062\u0062\u006A\u0065\u0068';if(!_0x4c5b)return;const _0x646ad=_0x69ggd['\u0067\u0065\u0074\u0042\u006F\u0075\u006E\u0064\u0069\u006E\u0067\u0043\u006C\u0069\u0065\u006E\u0074\u0052\u0065\u0063\u0074']();const x=_0x4c5b['\u0063\u006C\u0069\u0065\u006E\u0074\u0058']-_0x646ad['\u006C\u0065\u0066\u0074'];const _0x473fee=_0x646ad['\u0077\u0069\u0064\u0074\u0068'];var _0x4a_0x373=(619280^619280)+(345196^345192);const _0x2fe51d=Date['\u006E\u006F\u0077']();_0x4a_0x373=(883831^883839)+(424042^424043);const _0xa5aeac=_0x2fe51d-_0x40a89c;if(_0xa5aeac<(836993^836831)&&_0xa5aeac>(694062^694064)){const _0xe2_0x2f5=x>_0x473fee/(992089^992091);var _0x8d5d=(641858^641866)+(931047^931047);const _0xbdaa=_0xe2_0x2f5?914854^914860:-(348908^348902);_0x8d5d='\u0065\u0069\u0066\u0070\u0062\u0066';const _0x1ebdba=Math['\u006D\u0061\u0078'](393160^393160,Math['\u006D\u0069\u006E'](_0x69ggd['\u0064\u0075\u0072\u0061\u0074\u0069\u006F\u006E']||478717^478717,_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']+_0xbdaa));_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']=_0x1ebdba;_0xb4c3e(_0xbdaa);e['\u0070\u0072\u0065\u0076\u0065\u006E\u0074\u0044\u0065\u0066\u0061\u0075\u006C\u0074']();_0x40a89c=843021^843021;if(_0x6f78d){clearTimeout(_0x6f78d);_0x6f78d=null;}return;}_0x40a89c=_0x2fe51d;if(_0x6f78d){clearTimeout(_0x6f78d);_0x6f78d=null;}_0x6f78d=setTimeout(()=>{_0x40a89c=737965^737965;},883131^882731);}function _0xb4c3e(seconds){const _0x93d=_0x2dc;var _0x791aaf=(596952^596944)+(555028^555030);const _0xa2_0x7a1=Math['\u0061\u0062\u0073'](seconds);_0x791aaf=(445736^445729)+(295111^295104);const _0x6bb5dd=seconds>(812064^812064)?"\u0066\u006F\u0072\u0077\u0061\u0072\u0064":"\u0062\u0061\u0063\u006B\u0077\u0061\u0072\u0064";_0x93d['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']=(seconds>(102152^102152)?"\u002B":"\u002D")+_0xa2_0x7a1+"\u0073";_0x93d['\u0063\u006C\u0061\u0073\u0073\u004E\u0061\u006D\u0065']="\u0073\u006B\u0069\u0070\u002D\u0069\u006E\u0064\u0069\u0063\u0061\u0074\u006F\u0072\u0020"+_0x6bb5dd+"wohs ".split("").reverse().join("");clearTimeout(_0xe83cg['\u0073\u006B\u0069\u0070\u0054\u0069\u006D\u0065\u006F\u0075\u0074']);_0xe83cg['\u0073\u006B\u0069\u0070\u0054\u0069\u006D\u0065\u006F\u0075\u0074']=setTimeout(()=>_0x93d['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("\u0073\u0068\u006F\u0077"),210717^210245);}_0x18a['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("kcilc".split("").reverse().join(""),_0xa_0x594);_0x18a['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("nwodyek".split("").reverse().join(""),e=>{if(e['\u006B\u0065\u0079']==="\u0045\u006E\u0074\u0065\u0072")_0xa_0x594();});_0x299ea['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0073\u0075\u0062\u006D\u0069\u0074",e=>{e['\u0070\u0072\u0065\u0076\u0065\u006E\u0074\u0044\u0065\u0066\u0061\u0075\u006C\u0074']();const q=_0xe2a['\u0076\u0061\u006C\u0075\u0065']['\u0074\u0072\u0069\u006D']();if(q)_0xbfe37a(q);else _0xa_0x594();});_0x13d4g['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0063\u006C\u0069\u0063\u006B",e=>{e['\u0073\u0074\u006F\u0070\u0050\u0072\u006F\u0070\u0061\u0067\u0061\u0074\u0069\u006F\u006E']();let _0x1aa81e;const key=_0x13d4g['\u0064\u0061\u0074\u0061\u0073\u0065\u0074']['\u0076\u0069\u0064\u0065\u006F\u004B\u0065\u0079']||_0x6cc['\u0064\u0061\u0074\u0061\u0073\u0065\u0074']['\u0076\u0069\u0064\u0065\u006F\u004B\u0065\u0079'];_0x1aa81e=(774440^774441)+(141947^141945);if(key)_0x86eag(key);});_0x6cc['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0063\u006C\u0069\u0063\u006B",()=>{var _0xf18be=(304494^304491)+(533555^533562);const key=_0x6cc['\u0064\u0061\u0074\u0061\u0073\u0065\u0074']['\u0076\u0069\u0064\u0065\u006F\u004B\u0065\u0079'];_0xf18be=189933^189925;if(key)_0x86eag(key);});_0xf88eaa['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0063\u006C\u0069\u0063\u006B",e=>{var _0xee178e=(925314^925314)+(544182^544183);const card=e['\u0074\u0061\u0072\u0067\u0065\u0074']['\u0063\u006C\u006F\u0073\u0065\u0073\u0074']("\u002E\u0076\u0069\u0064\u0065\u006F\u002D\u0063\u0061\u0072\u0064");_0xee178e=(734767^734760)+(908498^908496);if(card){const key=card['\u0064\u0061\u0074\u0061\u0073\u0065\u0074']['\u0076\u0069\u0064\u0065\u006F\u004B\u0065\u0079'];if(key)_0x86eag(key);}});_0x8b_0x527['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0063\u006C\u0069\u0063\u006B",_0xe58fbc);_0x35b3bc['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0063\u006C\u0069\u0063\u006B",e=>{if(e['\u0074\u0061\u0072\u0067\u0065\u0074']===_0x35b3bc)_0xe58fbc();});_0x69ggd['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0070\u006C\u0061\u0079",()=>{_0xae107a(!![]);_0xg193af();});_0x69ggd['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("esuap".split("").reverse().join(""),()=>{_0xae107a(false);_0xaafd6c();});_0x69ggd['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("etadpuemit".split("").reverse().join(""),_0x7e12e);_0x69ggd['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0076\u006F\u006C\u0075\u006D\u0065\u0063\u0068\u0061\u006E\u0067\u0065",()=>{if(!_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']){_0xe83cg['\u0076\u006F\u006C\u0075\u006D\u0065']=_0x69ggd['\u0076\u006F\u006C\u0075\u006D\u0065'];_0x431a['\u0076\u0061\u006C\u0075\u0065']=_0x69ggd['\u0076\u006F\u006C\u0075\u006D\u0065'];_0xe83cg['\u0069\u0073\u004D\u0075\u0074\u0065\u0064']=_0x69ggd['\u006D\u0075\u0074\u0065\u0064'];_0xee9d4a();}});_0x4g6f5b['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0063\u006C\u0069\u0063\u006B",()=>{_0x9ee31f();_0xg193af();});_0x7f8ae['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u006D\u006F\u0075\u0073\u0065\u006D\u006F\u0076\u0065",e=>{if(e['\u0063\u006C\u0069\u0065\u006E\u0074\u0058']===_0xe83cg['\u006C\u0061\u0073\u0074\u004D\u006F\u0075\u0073\u0065\u0058']&&e['\u0063\u006C\u0069\u0065\u006E\u0074\u0059']===_0xe83cg['\u006C\u0061\u0073\u0074\u004D\u006F\u0075\u0073\u0065\u0059'])return;_0xe83cg['\u006C\u0061\u0073\u0074\u004D\u006F\u0075\u0073\u0065\u0058']=e['\u0063\u006C\u0069\u0065\u006E\u0074\u0058'];_0xe83cg['\u006C\u0061\u0073\u0074\u004D\u006F\u0075\u0073\u0065\u0059']=e['\u0063\u006C\u0069\u0065\u006E\u0074\u0059'];_0xaafd6c();});_0x7f8ae['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("evaelesuom".split("").reverse().join(""),()=>{_0xe83cg['\u006C\u0061\u0073\u0074\u004D\u006F\u0075\u0073\u0065\u0058']=-(379157^379156);_0xe83cg['\u006C\u0061\u0073\u0074\u004D\u006F\u0075\u0073\u0065\u0059']=-(663923^663922);if(!_0x69ggd['\u0070\u0061\u0075\u0073\u0065\u0064']){_0xe7d69b();}});_0x7f8ae['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0074\u006F\u0075\u0063\u0068\u0073\u0074\u0061\u0072\u0074",()=>{_0xaafd6c();},{'\u0070\u0061\u0073\u0073\u0069\u0076\u0065':!![]});_0x69ggd['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0063\u006C\u0069\u0063\u006B",e=>{e['\u0073\u0074\u006F\u0070\u0050\u0072\u006F\u0070\u0061\u0067\u0061\u0074\u0069\u006F\u006E']();_0xab_0x0b3();});_0x7f8ae['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0063\u006C\u0069\u0063\u006B",e=>{if(e['\u0074\u0061\u0072\u0067\u0065\u0074']===_0x7f8ae){_0xab_0x0b3();}});function _0xcdad(e){e['\u0070\u0072\u0065\u0076\u0065\u006E\u0074\u0044\u0065\u0066\u0061\u0075\u006C\u0074']();_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']=!![];_0xaafd6c();_0x46ce(e['\u0074\u006F\u0075\u0063\u0068\u0065\u0073'][851128^851128]);}function _0x72f55e(e){if(_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']){e['\u0070\u0072\u0065\u0076\u0065\u006E\u0074\u0044\u0065\u0066\u0061\u0075\u006C\u0074']();_0xg193af();const _0x854c=_0xd51dac['\u0067\u0065\u0074\u0042\u006F\u0075\u006E\u0064\u0069\u006E\u0067\u0043\u006C\u0069\u0065\u006E\u0074\u0052\u0065\u0063\u0074']();const x=e['\u0074\u006F\u0075\u0063\u0068\u0065\u0073'][927012^927012]['\u0063\u006C\u0069\u0065\u006E\u0074\u0058']-_0x854c['\u006C\u0065\u0066\u0074'];const _0x3b_0x9a9=Math['\u006D\u0061\u0078'](740863^740863,Math['\u006D\u0069\u006E'](468316^468317,x/_0x854c['\u0077\u0069\u0064\u0074\u0068']));const _0xd98deb=_0x69ggd['\u0064\u0075\u0072\u0061\u0074\u0069\u006F\u006E']||214904^214904;var _0x88d8d=(199118^199115)+(528830^528825);const _0xd1acfd=_0x3b_0x9a9*_0xd98deb;_0x88d8d="pibhih".split("").reverse().join("");_0x32363d['\u0073\u0074\u0079\u006C\u0065']['\u0077\u0069\u0064\u0074\u0068']=_0x3b_0x9a9*(648849^648949)+"\u0025";_0xd51dac['\u0073\u0065\u0074\u0041\u0074\u0074\u0072\u0069\u0062\u0075\u0074\u0065']("\u0061\u0072\u0069\u0061\u002D\u0076\u0061\u006C\u0075\u0065\u006E\u006F\u0077",Math['\u0072\u006F\u0075\u006E\u0064'](_0x3b_0x9a9*(126628^126656)));const _0xeca0a=_0x35fc(_0xd1acfd);let _0xc_0x80a;const _0x21_0x642=_0x35fc(_0xd98deb);_0xc_0x80a=486931^486933;_0xdef['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']=_0xeca0a+"\u0020\u002F\u0020"+_0x21_0x642;}}function _0xeedc0e(){if(_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']){_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']=false;const _0xgeeae=_0x32363d['\u0073\u0074\u0079\u006C\u0065']['\u0077\u0069\u0064\u0074\u0068'];var _0xedd=(221922^221926)+(532537^532541);const _0x87600f=parseFloat(_0xgeeae)/(215508^215472);_0xedd=511439^511439;let _0xd32f;const _0x54afcd=_0x69ggd['\u0064\u0075\u0072\u0061\u0074\u0069\u006F\u006E']||636445^636445;_0xd32f=(521265^521271)+(763444^763443);var _0xec6d8c=(337659^337660)+(711784^711789);const _0xbee86c=_0x87600f*_0x54afcd;_0xec6d8c=(392449^392450)+(936635^936633);_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']=_0xbee86c;_0x7e12e();_0xg193af();}}_0xd51dac['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u006D\u006F\u0075\u0073\u0065\u0064\u006F\u0077\u006E",e=>{_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']=!![];_0xaafd6c();_0x46ce(e);});document['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u006D\u006F\u0075\u0073\u0065\u006D\u006F\u0076\u0065",e=>{if(_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']){_0xg193af();var _0x1d7bgf=(683328^683331)+(220344^220351);const rect=_0xd51dac['\u0067\u0065\u0074\u0042\u006F\u0075\u006E\u0064\u0069\u006E\u0067\u0043\u006C\u0069\u0065\u006E\u0074\u0052\u0065\u0063\u0074']();_0x1d7bgf=252933^252935;var _0x278b=(358090^358093)+(479252^479252);const x=e['\u0063\u006C\u0069\u0065\u006E\u0074\u0058']-rect['\u006C\u0065\u0066\u0074'];_0x278b=269505^269509;const pct=Math['\u006D\u0061\u0078'](291395^291395,Math['\u006D\u0069\u006E'](806952^806953,x/rect['\u0077\u0069\u0064\u0074\u0068']));var _0x7_0x4e3=(284403^284405)+(641807^641805);const dur=_0x69ggd['\u0064\u0075\u0072\u0061\u0074\u0069\u006F\u006E']||427590^427590;_0x7_0x4e3=692981^692979;const time=pct*dur;_0x32363d['\u0073\u0074\u0079\u006C\u0065']['\u0077\u0069\u0064\u0074\u0068']=pct*(211694^211594)+"\u0025";_0xd51dac['\u0073\u0065\u0074\u0041\u0074\u0074\u0072\u0069\u0062\u0075\u0074\u0065']("\u0061\u0072\u0069\u0061\u002D\u0076\u0061\u006C\u0075\u0065\u006E\u006F\u0077",Math['\u0072\u006F\u0075\u006E\u0064'](pct*(953214^953114)));var _0x7ae9bf=(955236^955245)+(984462^984462);const current=_0x35fc(time);_0x7ae9bf=(134389^134390)+(608088^608089);const total=_0x35fc(dur);_0xdef['\u0074\u0065\u0078\u0074\u0043\u006F\u006E\u0074\u0065\u006E\u0074']=current+"\u0020\u002F\u0020"+total;}});document['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u006D\u006F\u0075\u0073\u0065\u0075\u0070",()=>{if(_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']){_0xe83cg['\u0069\u0073\u0044\u0072\u0061\u0067\u0067\u0069\u006E\u0067']=false;_0x7e12e();_0xg193af();}});_0xd51dac['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0074\u006F\u0075\u0063\u0068\u0073\u0074\u0061\u0072\u0074",_0xcdad,{"passive":false});_0xd51dac['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("evomhcuot".split("").reverse().join(""),_0x72f55e,{'\u0070\u0061\u0073\u0073\u0069\u0076\u0065':false});_0xd51dac['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0074\u006F\u0075\u0063\u0068\u0065\u006E\u0064",_0xeedc0e,{'\u0070\u0061\u0073\u0073\u0069\u0076\u0065':!![]});_0x431a['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0069\u006E\u0070\u0075\u0074",()=>{var _0xe5c9e=(372727^372724)+(994379^994371);const val=parseFloat(_0x431a['\u0076\u0061\u006C\u0075\u0065']);_0xe5c9e='\u0069\u0062\u0062\u0068\u006E\u006A';_0xfd2(val);_0xg193af();});_0x5ecf['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0063\u006C\u0069\u0063\u006B",()=>{_0x69gc1d();_0xg193af();});_0xa4f['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0063\u006C\u0069\u0063\u006B",_0x722fc);document['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("egnahcneercslluf".split("").reverse().join(""),()=>{_0xe83cg['\u0069\u0073\u0046\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E']=!!document['\u0066\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E\u0045\u006C\u0065\u006D\u0065\u006E\u0074'];if(!_0xe83cg['\u0069\u0073\u0046\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E']&&screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']&&screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']['\u0075\u006E\u006C\u006F\u0063\u006B']){try{screen['\u006F\u0072\u0069\u0065\u006E\u0074\u0061\u0074\u0069\u006F\u006E']['\u0075\u006E\u006C\u006F\u0063\u006B']();}catch(e){}}if(_0xe83cg['\u0069\u0073\u0046\u0075\u006C\u006C\u0073\u0063\u0072\u0065\u0065\u006E']){_0xaafd6c();}else{_0xe7d69b();}});_0xf3216f['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("egnahc".split("").reverse().join(""),()=>{var _0x14a89g=(987556^987552)+(196209^196209);const val=_0xf3216f['\u0076\u0061\u006C\u0075\u0065'];_0x14a89g=(530686^530685)+(590185^590185);if(val)_0x10_0x4a5(val);else if(_0xe83cg['\u0071\u0075\u0061\u006C\u0069\u0074\u0069\u0065\u0073']['\u006C\u0065\u006E\u0067\u0074\u0068'])_0x10_0x4a5(_0xe83cg['\u0071\u0075\u0061\u006C\u0069\u0074\u0069\u0065\u0073'][139544^139544]['\u0071\u0075\u0061\u006C\u0069\u0074\u0079']);_0xg193af();});_0x69ggd['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u0074\u006F\u0075\u0063\u0068\u0065\u006E\u0064",_0x088a0d,{'\u0070\u0061\u0073\u0073\u0069\u0076\u0065':false});document['\u0061\u0064\u0064\u0045\u0076\u0065\u006E\u0074\u004C\u0069\u0073\u0074\u0065\u006E\u0065\u0072']("\u006B\u0065\u0079\u0064\u006F\u0077\u006E",e=>{if(!_0xe83cg['\u0069\u0073\u0050\u006C\u0061\u0079\u0065\u0072\u004F\u0070\u0065\u006E'])return;if(e['\u0074\u0061\u0072\u0067\u0065\u0074']['\u0074\u0061\u0067\u004E\u0061\u006D\u0065']==="TUPNI".split("").reverse().join("")||e['\u0074\u0061\u0072\u0067\u0065\u0074']['\u0074\u0061\u0067\u004E\u0061\u006D\u0065']==="\u0053\u0045\u004C\u0045\u0043\u0054")return;_0xaafd6c();if(e['\u006B\u0065\u0079']==="\u0045\u0073\u0063\u0061\u0070\u0065")_0xe58fbc();if(e['\u006B\u0065\u0079']==="\u0020"){e['\u0070\u0072\u0065\u0076\u0065\u006E\u0074\u0044\u0065\u0066\u0061\u0075\u006C\u0074']();_0x9ee31f();}if(e['\u006B\u0065\u0079']==="thgiRworrA".split("").reverse().join("")){e['\u0070\u0072\u0065\u0076\u0065\u006E\u0074\u0044\u0065\u0066\u0061\u0075\u006C\u0074']();_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']=Math['\u006D\u0069\u006E'](_0x69ggd['\u0064\u0075\u0072\u0061\u0074\u0069\u006F\u006E']||815673^815673,_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']+(703351^703346));}if(e['\u006B\u0065\u0079']==="\u0041\u0072\u0072\u006F\u0077\u004C\u0065\u0066\u0074"){e['\u0070\u0072\u0065\u0076\u0065\u006E\u0074\u0044\u0065\u0066\u0061\u0075\u006C\u0074']();_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']=Math['\u006D\u0061\u0078'](371495^371495,_0x69ggd['\u0063\u0075\u0072\u0072\u0065\u006E\u0074\u0054\u0069\u006D\u0065']-(787726^787723));}if(e['\u006B\u0065\u0079']==="\u0066"||e['\u006B\u0065\u0079']==="\u0046")_0x722fc();if(e['\u006B\u0065\u0079']==="\u006D"||e['\u006B\u0065\u0079']==="\u004D")_0x69gc1d();});_0x35d();_0xg4e();window['\u005F\u005F\u0061\u0070\u0070']={'\u0073\u0074\u0061\u0074\u0065':_0xe83cg,'\u006F\u0070\u0065\u006E\u0050\u006C\u0061\u0079\u0065\u0072':_0x86eag,"closePlayer":_0xe58fbc,"goHome":_0xa_0x594};})();
-    </script>
-    <script src="./coi-serviceworker.js"></script>
-</body>
+    <!-- TOAST NOTIFICATIONS CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none"></div>
 
+    <!-- MAIN JAVASCRIPT LOGIC -->
+    <script>
+        /**
+         * NEXUS PLAY PLATFORM - CORE ENGINE & CLIENT LOGIC
+         * Vanilla JS Static Web Application
+         */
+
+        const API_BASE = 'https://apiph.hub4u.dpdns.org';
+
+        // Local Storage Keys
+        const STORAGE_WATCHLIST = 'nexus_play_watchlist_v1';
+        const STORAGE_HISTORY = 'nexus_play_history_v1';
+
+        // Global State Store
+        const state = {
+            view: 'home', // 'home' | 'trending' | 'watchlist' | 'history' | 'search'
+            videos: [],
+            spotlightVideo: null,
+            watchlist: JSON.parse(localStorage.getItem(STORAGE_WATCHLIST) || '[]'),
+            history: JSON.parse(localStorage.getItem(STORAGE_HISTORY) || '[]'),
+            activeVideo: null,
+            qualities: [],
+            currentQualityIndex: -1,
+            searchQuery: '',
+            sortBy: 'default',
+            tagFilter: null,
+            searchTimeout: null,
+            isCinemaMode: false,
+            hlsInstance: null
+        };
+
+        // DOM Element Cache
+        const elements = {
+            videoGrid: document.getElementById('videoGrid'),
+            skeletonGrid: document.getElementById('skeletonGrid'),
+            emptyState: document.getElementById('emptyState'),
+            errorState: document.getElementById('errorState'),
+            heroBanner: document.getElementById('heroBanner'),
+            heroImage: document.getElementById('heroImage'),
+            heroTitle: document.getElementById('heroTitle'),
+            heroAuthor: document.getElementById('heroAuthor'),
+            heroViews: document.getElementById('heroViews'),
+            heroRuntime: document.getElementById('heroRuntime'),
+            heroPlayBtn: document.getElementById('heroPlayBtn'),
+            heroSaveBtn: document.getElementById('heroSaveBtn'),
+            searchInput: document.getElementById('searchInput'),
+            mobileSearchInput: document.getElementById('mobileSearchInput'),
+            clearSearchBtn: document.getElementById('clearSearchBtn'),
+            searchBanner: document.getElementById('searchBanner'),
+            searchQueryText: document.getElementById('searchQueryText'),
+            resetSearchBtn: document.getElementById('resetSearchBtn'),
+            viewHeading: document.getElementById('viewHeading'),
+            videoCountBadge: document.getElementById('videoCountBadge'),
+            watchlistCount: document.getElementById('watchlistCount'),
+            historyCount: document.getElementById('historyCount'),
+            playerModal: document.getElementById('playerModal'),
+            mainVideoPlayer: document.getElementById('mainVideoPlayer'),
+            playerVideoTitle: document.getElementById('playerVideoTitle'),
+            playerModalTitle: document.getElementById('playerModalTitle'),
+            playerAuthorText: document.getElementById('playerAuthorText'),
+            playerViews: document.getElementById('playerViews'),
+            playerKeyBadge: document.getElementById('playerKeyBadge'),
+            qualityMenuBtn: document.getElementById('qualityMenuBtn'),
+            qualityDropdown: document.getElementById('qualityDropdown'),
+            qualityListContainer: document.getElementById('qualityListContainer'),
+            currentQualityLabel: document.getElementById('currentQualityLabel'),
+            relatedVideosQueue: document.getElementById('relatedVideosQueue'),
+            modalSaveBtn: document.getElementById('modalSaveBtn'),
+            modalSaveText: document.getElementById('modalSaveText'),
+            modalShareBtn: document.getElementById('modalShareBtn'),
+            closePlayerModalBtn: document.getElementById('closePlayerModalBtn'),
+            cinemaToggleBtn: document.getElementById('cinemaToggleBtn'),
+            playerContainerCol: document.getElementById('playerContainerCol'),
+            sidebar: document.getElementById('sidebar'),
+            sidebarBackdrop: document.getElementById('sidebarBackdrop'),
+            mobileMenuBtn: document.getElementById('mobileMenuBtn'),
+            mobileSearchToggle: document.getElementById('mobileSearchToggle'),
+            mobileSearchOverlay: document.getElementById('mobileSearchOverlay'),
+            closeMobileSearch: document.getElementById('closeMobileSearch'),
+            retryApiBtn: document.getElementById('retryApiBtn'),
+            apiStatusBadge: document.getElementById('apiStatusBadge'),
+            statusText: document.getElementById('statusText'),
+            toastContainer: document.getElementById('toastContainer')
+        };
+
+        // Utility: URL-safe Base64 Encoder with Compression Fallback
+        async function encodeQuery(text) {
+            if (!text) return '';
+            try {
+                if (typeof CompressionStream !== 'undefined') {
+                    const stream = new Response(text).body.pipeThrough(new CompressionStream('gzip'));
+                    const buffer = await new Response(stream).arrayBuffer();
+                    const bytes = new Uint8Array(buffer);
+                    let binary = '';
+                    const chunkSize = 0x8000;
+                    for (let i = 0; i < bytes.length; i += chunkSize) {
+                        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+                    }
+                    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                }
+            } catch (e) {
+                console.warn('Gzip Compression fallback used:', e);
+            }
+            const utf8Bytes = new TextEncoder().encode(text);
+            let binary = '';
+            for (let i = 0; i < utf8Bytes.length; i++) {
+                binary += String.fromCharCode(utf8Bytes[i]);
+            }
+            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
+        // Utility: Format Shorthand View Numbers
+        function formatViews(num) {
+            if (!num && num !== 0) return '0 views';
+            if (typeof num === 'string') return num.includes('views') ? num : `${num} views`;
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M views';
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K views';
+            return num + ' views';
+        }
+
+        // Utility: Toast Notifications
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const icons = {
+                success: 'fa-circle-check text-emerald-400',
+                error: 'fa-circle-xmark text-rose-400',
+                info: 'fa-circle-info text-sky-400'
+            };
+
+            toast.className = `pointer-events-auto flex items-center space-x-3 px-4 py-3 rounded-2xl glass-modal border border-white/10 shadow-2xl transform transition-all duration-300 translate-y-4 opacity-0 text-xs font-semibold text-white`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icons[type] || icons.info} text-base"></i>
+                <span>${message}</span>
+            `;
+
+            elements.toastContainer.appendChild(toast);
+
+            // Animate In
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            });
+
+            // Auto Remove after 3s
+            setTimeout(() => {
+                toast.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Save State to LocalStorage
+        function syncLocalStorage() {
+            localStorage.setItem(STORAGE_WATCHLIST, JSON.stringify(state.watchlist));
+            localStorage.setItem(STORAGE_HISTORY, JSON.stringify(state.history));
+            updateCounters();
+        }
+
+        function updateCounters() {
+            elements.watchlistCount.textContent = state.watchlist.length;
+            elements.historyCount.textContent = state.history.length;
+        }
+
+        // API Client Functions
+        async function checkApiHealth() {
+            try {
+                const res = await fetch(`${API_BASE}/health`, { cache: 'no-store' });
+                if (res.ok) {
+                    elements.statusText.textContent = 'CONNECTED';
+                    elements.apiStatusBadge.className = 'hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium';
+                    return true;
+                }
+            } catch (e) {
+                console.warn('Health check warning:', e);
+            }
+            elements.statusText.textContent = 'EDGE ONLINE';
+            return true;
+        }
+
+        async function fetchHomepage() {
+            showSkeletons(true);
+            hideErrors();
+            try {
+                const res = await fetch(`${API_BASE}/get_homepage`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                
+                if (data && Array.isArray(data.results)) {
+                    state.videos = data.results;
+                    renderView();
+                } else {
+                    throw new Error('Invalid JSON format returned from server');
+                }
+            } catch (err) {
+                console.error('Error fetching homepage:', err);
+                showErrorState('Failed to connect to API worker. Please check your internet connection or endpoint status.');
+            } finally {
+                showSkeletons(false);
+            }
+        }
+
+        async function searchVideos(query) {
+            if (!query || !query.trim()) {
+                fetchHomepage();
+                return;
+            }
+
+            showSkeletons(true);
+            hideErrors();
+            state.view = 'search';
+            state.searchQuery = query.trim();
+            updateNavActiveState();
+
+            try {
+                const encoded = await encodeQuery(query.trim());
+                const res = await fetch(`${API_BASE}/search?q=${encoded}`);
+                if (!res.ok) throw new Error(`Search error ${res.status}`);
+                const data = await res.json();
+
+                if (data && Array.isArray(data.results)) {
+                    state.videos = data.results;
+                    renderView();
+                } else {
+                    state.videos = [];
+                    renderView();
+                }
+            } catch (err) {
+                console.error('Error searching videos:', err);
+                showErrorState('Search request failed. Please try a different query.');
+            } finally {
+                showSkeletons(false);
+            }
+        }
+
+        async function fetchVideoQualities(videoKey) {
+            try {
+                const res = await fetch(`${API_BASE}/full_qual?videoKey=${videoKey}`);
+                if (!res.ok) throw new Error(`Qualities error HTTP ${res.status}`);
+                const data = await res.json();
+                if (data && Array.isArray(data.results) && data.results.length > 0) {
+                    return data.results;
+                }
+            } catch (err) {
+                console.error('Failed to load video streams:', err);
+            }
+            return null;
+        }
+
+        // View State Renderers
+        function showSkeletons(show) {
+            if (show) {
+                elements.skeletonGrid.classList.remove('hidden');
+                elements.videoGrid.classList.add('hidden');
+                elements.emptyState.classList.add('hidden');
+            } else {
+                elements.skeletonGrid.classList.add('hidden');
+                elements.videoGrid.classList.remove('hidden');
+            }
+        }
+
+        function hideErrors() {
+            elements.errorState.classList.add('hidden');
+        }
+
+        function showErrorState(msg) {
+            elements.skeletonGrid.classList.add('hidden');
+            elements.videoGrid.classList.add('hidden');
+            elements.emptyState.classList.add('hidden');
+            elements.heroBanner.classList.add('hidden');
+            elements.errorState.classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = msg;
+        }
+
+        function filterAndSortVideos() {
+            let list = [...state.videos];
+
+            // Apply view specific filters
+            if (state.view === 'watchlist') {
+                list = [...state.watchlist];
+            } else if (state.view === 'history') {
+                list = [...state.history];
+            }
+
+            // Apply Tag Filter
+            if (state.tagFilter) {
+                const tag = state.tagFilter.toLowerCase();
+                list = list.filter(v => {
+                    const title = (v.title || '').toLowerCase();
+                    const author = (v.author || '').toLowerCase();
+                    if (tag === '4k' || tag === 'hd') return true;
+                    if (tag === 'short') return (v.runtime || '').length <= 4;
+                    if (tag === 'long') return (v.runtime || '').length > 4;
+                    return title.includes(tag) || author.includes(tag);
+                });
+            }
+
+            // Apply Sorting
+            if (state.sortBy === 'views') {
+                list.sort((a, b) => (b.views || 0) - (a.views || 0));
+            } else if (state.sortBy === 'title') {
+                list.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+            }
+
+            return list;
+        }
+
+        function renderView() {
+            const list = filterAndSortVideos();
+
+            // Update Headings & UI Context
+            if (state.view === 'home') {
+                elements.viewHeading.innerHTML = `<i class="fa-solid fa-compass text-brand-500"></i><span>Explore Feed</span>`;
+                elements.searchBanner.classList.add('hidden');
+            } else if (state.view === 'trending') {
+                elements.viewHeading.innerHTML = `<i class="fa-solid fa-fire text-amber-500"></i><span>Trending Videos</span>`;
+                elements.searchBanner.classList.add('hidden');
+            } else if (state.view === 'watchlist') {
+                elements.viewHeading.innerHTML = `<i class="fa-solid fa-bookmark text-rose-500"></i><span>Saved Watchlist</span>`;
+                elements.searchBanner.classList.add('hidden');
+            } else if (state.view === 'history') {
+                elements.viewHeading.innerHTML = `<i class="fa-solid fa-clock-rotate-left text-violet-500"></i><span>Watch History</span>`;
+                elements.searchBanner.classList.add('hidden');
+            } else if (state.view === 'search') {
+                elements.viewHeading.innerHTML = `<i class="fa-solid fa-magnifying-glass text-sky-400"></i><span>Search Results</span>`;
+                elements.searchQueryText.textContent = `"${state.searchQuery}"`;
+                elements.searchBanner.classList.remove('hidden');
+            }
+
+            elements.videoCountBadge.textContent = `${list.length} videos`;
+
+            // Spotlight Banner logic (only on home or trending with items available)
+            if ((state.view === 'home' || state.view === 'trending') && list.length > 0) {
+                setupSpotlightBanner(list[0]);
+            } else {
+                elements.heroBanner.classList.add('hidden');
+            }
+
+            // Empty state check
+            if (list.length === 0) {
+                elements.videoGrid.innerHTML = '';
+                elements.emptyState.classList.remove('hidden');
+                elements.emptyState.classList.add('flex');
+
+                if (state.view === 'watchlist') {
+                    document.getElementById('emptyTitle').textContent = 'Your Watchlist is Empty';
+                    document.getElementById('emptyMessage').textContent = 'Click the bookmark icon on any video card to save it for later viewing.';
+                } else if (state.view === 'history') {
+                    document.getElementById('emptyTitle').textContent = 'No Watch History';
+                    document.getElementById('emptyMessage').textContent = 'Videos you play will automatically be tracked here.';
+                } else if (state.view === 'search') {
+                    document.getElementById('emptyTitle').textContent = 'No Matches Found';
+                    document.getElementById('emptyMessage').textContent = `We couldn't find videos matching "${state.searchQuery}". Try different keywords.`;
+                }
+                return;
+            }
+
+            elements.emptyState.classList.add('hidden');
+            elements.emptyState.classList.remove('flex');
+
+            // Render Video Cards Grid
+            elements.videoGrid.innerHTML = list.map(video => createVideoCardHTML(video)).join('');
+            
+            // Attach Card Click Handlers
+            attachVideoCardEvents();
+        }
+
+        function setupSpotlightBanner(video) {
+            if (!video) return;
+            state.spotlightVideo = video;
+            elements.heroTitle.textContent = video.title || 'Untitled Stream';
+            elements.heroAuthor.querySelector('span').textContent = video.author || 'Featured Creator';
+            elements.heroViews.textContent = formatViews(video.views);
+            elements.heroRuntime.textContent = video.runtime || 'HD';
+            elements.heroImage.src = video.thumbnail || 'https://placehold.co/1280x720/0f1118/ffffff?text=NEXUS+STREAM';
+
+            const isSaved = state.watchlist.some(v => v.videoKey === video.videoKey);
+            elements.heroSaveBtn.innerHTML = isSaved ? '<i class="fa-solid fa-bookmark text-brand-500"></i>' : '<i class="fa-regular fa-bookmark"></i>';
+
+            elements.heroBanner.classList.remove('hidden');
+        }
+
+        function createVideoCardHTML(video) {
+            const isSaved = state.watchlist.some(v => v.videoKey === video.videoKey);
+            const thumbnail = video.thumbnail || 'https://placehold.co/600x400/0f1118/ffffff?text=No+Thumbnail';
+
+            return `
+                <div class="video-card group glass-panel rounded-2xl overflow-hidden border border-white/5 hover:border-brand-500/40 transition-all duration-300 flex flex-col cursor-pointer glow-hover" data-key="${video.videoKey}">
+                    <!-- Thumbnail Container -->
+                    <div class="relative aspect-video w-full overflow-hidden bg-black/40">
+                        <img 
+                            src="${thumbnail}" 
+                            alt="${escapeHtml(video.title || '')}" 
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="lazy"
+                            onerror="this.onerror=null; this.src='https://placehold.co/600x400/0f1118/ffffff?text=Nexus+Stream';"
+                        >
+                        <!-- Runtime Overlay Badge -->
+                        <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded-lg bg-black/80 backdrop-blur-md text-white font-mono text-[11px] font-semibold border border-white/10 shadow-lg">
+                            ${video.runtime || 'HD'}
+                        </div>
+
+                        <!-- Hover Play Glow Icon -->
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div class="w-12 h-12 rounded-full bg-brand-500/90 text-white flex items-center justify-center shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                                <i class="fa-solid fa-play text-lg ml-0.5"></i>
+                            </div>
+                        </div>
+
+                        <!-- Quick Bookmark Button -->
+                        <button class="card-bookmark-btn absolute top-2 right-2 p-2 rounded-xl bg-black/60 hover:bg-black/90 backdrop-blur-md text-white transition border border-white/10 z-10" data-key="${video.videoKey}">
+                            <i class="${isSaved ? 'fa-solid fa-bookmark text-brand-500' : 'fa-regular fa-bookmark'}"></i>
+                        </button>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <h3 class="text-xs sm:text-sm font-bold text-gray-100 group-hover:text-brand-400 transition-colors line-clamp-2 leading-snug" title="${escapeHtml(video.title || '')}">
+                            ${escapeHtml(video.title || 'Untitled Stream')}
+                        </h3>
+
+                        <div class="flex items-center justify-between text-[11px] text-gray-400 font-medium pt-2 border-t border-white/5">
+                            <span class="truncate max-w-[120px] text-gray-300 flex items-center space-x-1">
+                                <i class="fa-solid fa-user-ninja text-[10px] text-brand-500"></i>
+                                <span>${escapeHtml(video.author || 'Creator')}</span>
+                            </span>
+                            <span class="font-mono text-gray-500">${formatViews(video.views)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function attachVideoCardEvents() {
+            // Card click -> Open player
+            document.querySelectorAll('.video-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    // Ignore if clicked directly on bookmark button
+                    if (e.target.closest('.card-bookmark-btn')) return;
+                    
+                    const videoKey = card.dataset.key;
+                    const video = state.videos.find(v => v.videoKey === videoKey) ||
+                                  state.watchlist.find(v => v.videoKey === videoKey) ||
+                                  state.history.find(v => v.videoKey === videoKey);
+                    
+                    if (video) openPlayerModal(video);
+                });
+            });
+
+            // Card Bookmark click
+            document.querySelectorAll('.card-bookmark-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const videoKey = btn.dataset.key;
+                    toggleWatchlist(videoKey);
+                });
+            });
+        }
+
+        function toggleWatchlist(videoKey) {
+            const video = state.videos.find(v => v.videoKey === videoKey) ||
+                          state.watchlist.find(v => v.videoKey === videoKey) ||
+                          state.history.find(v => v.videoKey === videoKey) ||
+                          state.activeVideo;
+
+            if (!video) return;
+
+            const existingIndex = state.watchlist.findIndex(v => v.videoKey === videoKey);
+            if (existingIndex >= 0) {
+                state.watchlist.splice(existingIndex, 1);
+                showToast('Removed from Watchlist', 'info');
+            } else {
+                state.watchlist.unshift(video);
+                showToast('Added to Watchlist!', 'success');
+            }
+
+            syncLocalStorage();
+            renderView();
+
+            if (state.activeVideo && state.activeVideo.videoKey === videoKey) {
+                updateModalSaveButton();
+            }
+        }
+
+        function addToHistory(video) {
+            if (!video) return;
+            // Remove duplicate if exists
+            state.history = state.history.filter(v => v.videoKey !== video.videoKey);
+            state.history.unshift({
+                ...video,
+                watchedAt: new Date().toISOString()
+            });
+            syncLocalStorage();
+        }
+
+        // VIDEO PLAYER & HLS.JS ENGINE
+        async function openPlayerModal(video) {
+            state.activeVideo = video;
+            addToHistory(video);
+
+            // Populate Modal Text Meta
+            elements.playerVideoTitle.textContent = video.title || 'Untitled Stream';
+            elements.playerModalTitle.textContent = video.title || 'Untitled Stream';
+            elements.playerAuthorText.textContent = video.author || 'Creator';
+            elements.playerViews.textContent = formatViews(video.views);
+            elements.playerKeyBadge.textContent = `Key: ${video.videoKey || 'N/A'}`;
+
+            updateModalSaveButton();
+
+            // Populate Recommendation Queue
+            renderRelatedQueue(video);
+
+            // Show Modal UI
+            elements.playerModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            // Reset Player
+            if (elements.mainVideoPlayer) {
+                elements.mainVideoPlayer.pause();
+                elements.mainVideoPlayer.removeAttribute('src');
+                elements.mainVideoPlayer.load();
+            }
+
+            elements.currentQualityLabel.textContent = 'Fetching Stream...';
+            elements.qualityListContainer.innerHTML = '<div class="px-3 py-2 text-xs text-gray-400 font-mono">Loading qualities...</div>';
+
+            // Fetch Qualities from worker endpoint: GET /full_qual?videoKey=<key>
+            const qualities = await fetchVideoQualities(video.videoKey);
+
+            if (qualities && qualities.length > 0) {
+                state.qualities = qualities;
+                renderQualityMenu();
+                // Select Highest Quality by default
+                selectQuality(qualities.length - 1);
+            } else {
+                elements.currentQualityLabel.textContent = 'Stream Unavailable';
+                elements.qualityListContainer.innerHTML = '<div class="px-3 py-2 text-xs text-rose-400">No stream sources found.</div>';
+                showToast('Unable to fetch HLS stream for this video.', 'error');
+            }
+        }
+
+        function renderModalSaveButton() {
+            updateModalSaveButton();
+        }
+
+        function updateModalSaveButton() {
+            if (!state.activeVideo) return;
+            const isSaved = state.watchlist.some(v => v.videoKey === state.activeVideo.videoKey);
+            if (isSaved) {
+                elements.modalSaveBtn.className = 'px-4 py-2.5 rounded-xl bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/40 text-brand-400 text-xs font-semibold flex items-center space-x-2 transition';
+                elements.modalSaveBtn.innerHTML = '<i class="fa-solid fa-bookmark text-brand-500"></i><span>Saved to Watchlist</span>';
+            } else {
+                elements.modalSaveBtn.className = 'px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold flex items-center space-x-2 transition';
+                elements.modalSaveBtn.innerHTML = '<i class="fa-regular fa-bookmark"></i><span>Bookmark</span>';
+            }
+        }
+
+        function renderQualityMenu() {
+            elements.qualityListContainer.innerHTML = state.qualities.map((item, index) => `
+                <button class="quality-opt-btn w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-white/10 flex items-center justify-between font-mono rounded-lg transition" data-index="${index}">
+                    <span>${item.quality ? item.quality + 'p' : 'HD'}</span>
+                    ${index === state.currentQualityIndex ? '<i class="fa-solid fa-check text-brand-500"></i>' : ''}
+                </button>
+            `).join('');
+
+            document.querySelectorAll('.quality-opt-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.index, 10);
+                    selectQuality(idx);
+                    elements.qualityDropdown.classList.add('hidden');
+                });
+            });
+        }
+
+        function selectQuality(index) {
+            if (!state.qualities[index]) return;
+            state.currentQualityIndex = index;
+            const item = state.qualities[index];
+            
+            elements.currentQualityLabel.textContent = item.quality ? `${item.quality}p HD` : 'High Res';
+            renderQualityMenu();
+
+            playM3u8Stream(item.streamable_m3u8);
+        }
+
+        function playM3u8Stream(m3u8Text) {
+            if (!m3u8Text) {
+                showToast('Stream playlist payload is empty.', 'error');
+                return;
+            }
+
+            // Create Blob URL for streamable_m3u8 text
+            const blob = new Blob([m3u8Text], { type: 'application/x-mpegURL' });
+            const blobUrl = URL.createObjectURL(blob);
+
+            const videoEl = elements.mainVideoPlayer;
+
+            // Preserve current time if user changed resolution during playback
+            const currentTime = videoEl.currentTime || 0;
+
+            if (Hls.isSupported()) {
+                if (state.hlsInstance) {
+                    state.hlsInstance.destroy();
+                }
+
+                const hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 90
+                });
+
+                state.hlsInstance = hls;
+                hls.loadSource(blobUrl);
+                hls.attachMedia(videoEl);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    if (currentTime > 0) videoEl.currentTime = currentTime;
+                    videoEl.play().catch(e => console.log('Autoplay blocked:', e));
+                });
+
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        console.warn('HLS Fatal Error:', data);
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                hls.destroy();
+                                break;
+                        }
+                    }
+                });
+
+            } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+                // Native Safari / iOS HLS Support
+                videoEl.src = blobUrl;
+                videoEl.addEventListener('loadedmetadata', () => {
+                    if (currentTime > 0) videoEl.currentTime = currentTime;
+                    videoEl.play();
+                });
+            } else {
+                showToast('Your browser does not support HLS streaming video playback.', 'error');
+            }
+        }
+
+        function closePlayerModal() {
+            elements.playerModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            
+            if (elements.mainVideoPlayer) {
+                elements.mainVideoPlayer.pause();
+                elements.mainVideoPlayer.removeAttribute('src');
+                elements.mainVideoPlayer.load();
+            }
+
+            if (state.hlsInstance) {
+                state.hlsInstance.destroy();
+                state.hlsInstance = null;
+            }
+
+            elements.qualityDropdown.classList.add('hidden');
+        }
+
+        function renderRelatedQueue(currentVideo) {
+            const queueList = state.videos.filter(v => v.videoKey !== currentVideo.videoKey).slice(0, 8);
+            
+            if (queueList.length === 0) {
+                elements.relatedVideosQueue.innerHTML = '<p class="text-xs text-gray-500 italic p-2">No other videos in current queue.</p>';
+                return;
+            }
+
+            elements.relatedVideosQueue.innerHTML = queueList.map(v => `
+                <div class="queue-item glass-panel p-2 rounded-2xl border border-white/5 hover:border-brand-500/30 flex space-x-3 cursor-pointer group transition" data-key="${v.videoKey}">
+                    <div class="relative w-28 aspect-video rounded-xl overflow-hidden bg-black flex-shrink-0">
+                        <img src="${v.thumbnail || 'https://placehold.co/300x200/0f1118/ffffff'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="">
+                        <span class="absolute bottom-1 right-1 px-1.5 py-0.2 rounded bg-black/80 text-[10px] font-mono text-white">${v.runtime || 'HD'}</span>
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col justify-center space-y-1">
+                        <h4 class="text-xs font-bold text-gray-200 group-hover:text-brand-400 line-clamp-2 leading-tight">${escapeHtml(v.title || '')}</h4>
+                        <p class="text-[10px] text-gray-400">${escapeHtml(v.author || 'Creator')}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.queue-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const key = item.dataset.key;
+                    const nextVid = state.videos.find(v => v.videoKey === key);
+                    if (nextVid) openPlayerModal(nextVid);
+                });
+            });
+        }
+
+        // EVENT LISTENERS & INTERACTION HANDLERS
+        function updateNavActiveState() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                const tabView = tab.dataset.tab;
+                if (tabView === state.view) {
+                    tab.className = 'nav-tab active w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-white bg-brand-500/15 border border-brand-500/30';
+                } else {
+                    tab.className = 'nav-tab w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition';
+                }
+            });
+        }
+
+        // Navigation Tabs Click
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetView = tab.dataset.tab;
+                state.view = targetView;
+                state.searchQuery = '';
+                elements.searchInput.value = '';
+                elements.mobileSearchInput.value = '';
+                elements.clearSearchBtn.classList.add('hidden');
+                
+                updateNavActiveState();
+                
+                if (targetView === 'home' || targetView === 'trending') {
+                    if (state.videos.length === 0) {
+                        fetchHomepage();
+                    } else {
+                        renderView();
+                    }
+                } else {
+                    renderView();
+                }
+
+                // Close Mobile Sidebar if open
+                closeMobileSidebar();
+            });
+        });
+
+        // Tag Pills Filter
+        document.querySelectorAll('.tag-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                const tag = pill.dataset.tag;
+                if (state.tagFilter === tag) {
+                    state.tagFilter = null;
+                    pill.classList.remove('bg-brand-500', 'text-white');
+                    pill.classList.add('bg-white/5', 'text-gray-300');
+                } else {
+                    document.querySelectorAll('.tag-pill').forEach(p => {
+                        p.classList.remove('bg-brand-500', 'text-white');
+                        p.classList.add('bg-white/5', 'text-gray-300');
+                    });
+                    state.tagFilter = tag;
+                    pill.classList.remove('bg-white/5', 'text-gray-300');
+                    pill.classList.add('bg-brand-500', 'text-white');
+                }
+                renderView();
+            });
+        });
+
+        // Sorting Buttons
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.sort-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-white/10', 'text-white', 'border-white/10');
+                    b.classList.add('bg-white/5', 'text-gray-400', 'border-transparent');
+                });
+                btn.classList.add('active', 'bg-white/10', 'text-white', 'border-white/10');
+                btn.classList.remove('bg-white/5', 'text-gray-400', 'border-transparent');
+
+                state.sortBy = btn.dataset.sort;
+                renderView();
+            });
+        });
+
+        // Search Inputs (Debounced)
+        function handleSearchInput(e) {
+            const val = e.target.value;
+            if (val) {
+                elements.clearSearchBtn.classList.remove('hidden');
+            } else {
+                elements.clearSearchBtn.classList.add('hidden');
+            }
+
+            clearTimeout(state.searchTimeout);
+            state.searchTimeout = setTimeout(() => {
+                searchVideos(val);
+            }, 600);
+        }
+
+        elements.searchInput.addEventListener('input', handleSearchInput);
+        elements.mobileSearchInput.addEventListener('input', handleSearchInput);
+
+        // Clear Search
+        elements.clearSearchBtn.addEventListener('click', () => {
+            elements.searchInput.value = '';
+            elements.mobileSearchInput.value = '';
+            elements.clearSearchBtn.classList.add('hidden');
+            state.view = 'home';
+            updateNavActiveState();
+            renderView();
+        });
+
+        elements.resetSearchBtn.addEventListener('click', () => {
+            elements.searchInput.value = '';
+            elements.mobileSearchInput.value = '';
+            elements.clearSearchBtn.classList.add('hidden');
+            state.view = 'home';
+            updateNavActiveState();
+            renderView();
+        });
+
+        elements.emptyResetBtn.addEventListener('click', () => {
+            state.view = 'home';
+            state.searchQuery = '';
+            elements.searchInput.value = '';
+            updateNavActiveState();
+            fetchHomepage();
+        });
+
+        // Spotlight Hero Play & Save Buttons
+        elements.heroPlayBtn.addEventListener('click', () => {
+            if (state.spotlightVideo) openPlayerModal(state.spotlightVideo);
+        });
+
+        elements.heroSaveBtn.addEventListener('click', () => {
+            if (state.spotlightVideo) {
+                toggleWatchlist(state.spotlightVideo.videoKey);
+                setupSpotlightBanner(state.spotlightVideo);
+            }
+        });
+
+        // Quality Dropdown Menu Toggle
+        elements.qualityMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            elements.qualityDropdown.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', () => {
+            elements.qualityDropdown.classList.add('hidden');
+        });
+
+        // Modal Controls
+        elements.closePlayerModalBtn.addEventListener('click', closePlayerModal);
+
+        elements.modalSaveBtn.addEventListener('click', () => {
+            if (state.activeVideo) {
+                toggleWatchlist(state.activeVideo.videoKey);
+            }
+        });
+
+        elements.modalShareBtn.addEventListener('click', () => {
+            if (!state.activeVideo) return;
+            const shareUrl = `${window.location.origin}${window.location.pathname}?v=${state.activeVideo.videoKey}`;
+            
+            // Clipboard Copy
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = shareUrl;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+
+            showToast('Video share link copied to clipboard!', 'success');
+        });
+
+        // Cinema Mode Toggle
+        elements.cinemaToggleBtn.addEventListener('click', () => {
+            state.isCinemaMode = !state.isCinemaMode;
+            if (state.isCinemaMode) {
+                elements.playerContainerCol.classList.remove('lg:col-span-2');
+                elements.playerContainerCol.classList.add('lg:col-span-3');
+                elements.cinemaToggleBtn.classList.add('text-brand-500');
+            } else {
+                elements.playerContainerCol.classList.remove('lg:col-span-3');
+                elements.playerContainerCol.classList.add('lg:col-span-2');
+                elements.cinemaToggleBtn.classList.remove('text-brand-500');
+            }
+        });
+
+        // Mobile Menu Drawer
+        elements.mobileMenuBtn.addEventListener('click', () => {
+            elements.sidebar.classList.remove('-translate-x-full');
+            elements.sidebarBackdrop.classList.remove('hidden');
+        });
+
+        function closeMobileSidebar() {
+            elements.sidebar.classList.add('-translate-x-full');
+            elements.sidebarBackdrop.classList.add('hidden');
+        }
+
+        elements.sidebarBackdrop.addEventListener('click', closeMobileSidebar);
+
+        // Mobile Search Toggle
+        elements.mobileSearchToggle.addEventListener('click', () => {
+            elements.mobileSearchOverlay.classList.toggle('hidden');
+            if (!elements.mobileSearchOverlay.classList.contains('hidden')) {
+                elements.mobileSearchInput.focus();
+            }
+        });
+
+        elements.closeMobileSearch.addEventListener('click', () => {
+            elements.mobileSearchOverlay.classList.add('hidden');
+        });
+
+        // Header Nav Quick Counters Buttons
+        elements.navWatchlistBtn.addEventListener('click', () => {
+            state.view = 'watchlist';
+            updateNavActiveState();
+            renderView();
+        });
+
+        elements.navHistoryBtn.addEventListener('click', () => {
+            state.view = 'history';
+            updateNavActiveState();
+            renderView();
+        });
+
+        // Global Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Esc key closes modal
+            if (e.key === 'Escape') {
+                if (!elements.playerModal.classList.contains('hidden')) {
+                    closePlayerModal();
+                }
+            }
+            // '/' key focuses search bar
+            if (e.key === '/' && document.activeElement !== elements.searchInput && document.activeElement !== elements.mobileSearchInput) {
+                e.preventDefault();
+                elements.searchInput.focus();
+            }
+        });
+
+        elements.retryApiBtn.addEventListener('click', () => {
+            fetchHomepage();
+        });
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', async () => {
+            updateCounters();
+            await checkApiHealth();
+            fetchHomepage();
+        });
+    </script>
+</body>
 </html>
