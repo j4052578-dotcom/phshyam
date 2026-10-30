@@ -176,10 +176,10 @@
                 <div class="absolute left-4 text-gray-400 pointer-events-none">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </div>
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     id="searchInput"
-                    placeholder="Search thousands of videos, creators, streams... (Press '/' to focus)" 
+                    placeholder="Search thousands of videos, creators, streams... (Press '/' to focus)"
                     class="w-full bg-card/80 border border-white/10 rounded-2xl pl-11 pr-24 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/20 transition-all shadow-inner"
                 >
                 <div class="absolute right-3 flex items-center space-x-2">
@@ -221,10 +221,10 @@
     <!-- MOBILE SEARCH BAR OVERLAY -->
     <div id="mobileSearchOverlay" class="hidden md:hidden p-4 glass-nav border-b border-white/10 space-y-2">
         <div class="relative flex items-center">
-            <input 
-                type="text" 
+            <input
+                type="text"
                 id="mobileSearchInput"
-                placeholder="Search videos..." 
+                placeholder="Search videos..."
                 class="w-full bg-card border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-brand-500"
             >
             <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-400"></i>
@@ -298,7 +298,7 @@
             <section id="heroBanner" class="relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-6 md:p-10 transition-all duration-500 hidden">
                 <div class="absolute inset-0 bg-gradient-to-r from-oled via-oled/80 to-transparent z-10"></div>
                 <img id="heroImage" src="" alt="Spotlight" class="absolute inset-0 w-full h-full object-cover opacity-30 filter blur-sm">
-                
+
                 <div class="relative z-20 max-w-2xl space-y-4">
                     <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/20 border border-brand-500/40 text-brand-400 text-xs font-semibold uppercase tracking-wider">
                         <i class="fa-solid fa-fire animate-pulse"></i>
@@ -438,7 +438,7 @@
 
     <!-- VIDEO PLAYER MODAL / THEATER OVERLAY -->
     <div id="playerModal" class="fixed inset-0 z-50 glass-modal flex flex-col hidden overflow-y-auto transition-opacity duration-300">
-        
+
         <!-- Player Modal Header Bar -->
         <div class="sticky top-0 z-10 glass-nav px-4 lg:px-8 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3 overflow-hidden">
@@ -463,10 +463,10 @@
 
         <!-- Player Body Layout -->
         <div class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
+
             <!-- Left & Main: Video Frame & Metadata (Cols 2) -->
             <div id="playerContainerCol" class="lg:col-span-2 space-y-6">
-                
+
                 <!-- Video Player Container Box -->
                 <div class="relative bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
                     <div class="video-container">
@@ -584,7 +584,9 @@
             hlsInstance: null,
             currentPage: 1,
             isFetching: false,
-            hasMore: true
+            hasMore: true,
+            requestId: 0,      // invalidates stale responses
+            feedSource: null   // 'home' | 'search' - what state.videos currently holds
         };
 
         // DOM Element Cache
@@ -727,171 +729,126 @@
             return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         }
 
-        async function fetchHomepage(page = 1, append = false) {
-            if (state.isFetching) return;
+        // ------------------------------------------------------------------
+        // FEED LOADING + INFINITE SCROLL (homepage and search share one loader)
+        // ------------------------------------------------------------------
+        async function loadFeed({ query = '', page = 1, append = false } = {}) {
+            const isSearch = !!query;
+            if (append && (state.isFetching || !state.hasMore)) return;
+
+            const reqId = ++state.requestId;
             state.isFetching = true;
 
             if (!append) {
                 state.currentPage = 1;
                 state.hasMore = true;
                 state.videos = [];
+                state.feedSource = isSearch ? 'search' : 'home';
+                if (isSearch) {
+                    state.view = 'search';
+                    state.searchQuery = query;
+                } else {
+                    state.searchQuery = '';
+                    if (state.view === 'search') state.view = 'home';
+                }
+                updateNavActiveState();
                 showSkeletons(true);
             } else {
-                if (elements.infiniteLoader) elements.infiniteLoader.classList.remove('hidden');
+                elements.infiniteLoader.classList.remove('hidden');
             }
-
             hideErrors();
+
             try {
-                const res = await fetch(`${API_BASE}/get_homepage?page=${page}`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-
-                const newVideos = (data && Array.isArray(data.results)) ? data.results : [];
-
-                if (newVideos.length === 0) {
-                    state.hasMore = false;
+                let url;
+                if (isSearch) {
+                    const encoded = await encodeQuery(query);
+                    url = `${API_BASE}/search?q=${encoded}&page=${page}`;
                 } else {
-                    if (append) {
-                        const existingKeys = new Set(state.videos.map(v => v.videoKey));
-                        const filteredNew = newVideos.filter(v => v.videoKey && !existingKeys.has(v.videoKey));
-                        if (filteredNew.length === 0) {
-                            state.hasMore = false;
-                        } else {
-                            state.videos = [...state.videos, ...filteredNew];
-                            state.currentPage = page;
-                        }
-                    } else {
-                        state.videos = newVideos;
-                        state.currentPage = page;
-                    }
+                    url = `${API_BASE}/get_homepage?page=${page}`;
                 }
 
-                renderView();
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                if (reqId !== state.requestId) return; // a newer request replaced this one
+
+                const incoming = Array.isArray(data?.results) ? data.results : [];
+                const seen = new Set(state.videos.map(v => v.videoKey));
+                const fresh = incoming.filter(v => v.videoKey && !seen.has(v.videoKey));
+
+                if (fresh.length === 0) {
+                    state.hasMore = false;
+                } else {
+                    state.videos = append ? [...state.videos, ...fresh] : fresh;
+                    state.currentPage = page;
+                }
+
+                if (append && fresh.length) appendCards(fresh);
+                else renderView();
             } catch (err) {
-                console.error('Error fetching homepage:', err);
+                if (reqId !== state.requestId) return;
+                console.error('Feed error:', err);
                 if (!append) {
-                    showErrorState('Failed to connect to API worker. Please check your internet connection or endpoint status.');
+                    showErrorState(isSearch
+                        ? 'Search request failed. Please try a different query.'
+                        : 'Failed to connect to API worker. Please check your internet connection or endpoint status.');
                 } else {
                     showToast('Failed to load more videos.', 'error');
                 }
             } finally {
-                showSkeletons(false);
-                state.isFetching = false;
-                if (elements.infiniteLoader) elements.infiniteLoader.classList.add('hidden');
-                checkSentinelInView();
+                if (reqId === state.requestId) {
+                    showSkeletons(false);
+                    state.isFetching = false;
+                    elements.infiniteLoader.classList.add('hidden');
+                    checkSentinelInView();
+                }
             }
         }
 
-        async function searchVideos(query, page = 1, append = false) {
-            if (!query || !query.trim()) {
-                fetchHomepage(1, false);
-                return;
-            }
-
-            if (state.isFetching) return;
-            state.isFetching = true;
-
-            if (!append) {
-                state.currentPage = 1;
-                state.hasMore = true;
-                state.videos = [];
-                showSkeletons(true);
-            } else {
-                if (elements.infiniteLoader) elements.infiniteLoader.classList.remove('hidden');
-            }
-
-            hideErrors();
-            state.view = 'search';
-            state.searchQuery = query.trim();
-            updateNavActiveState();
-
-            try {
-                const encoded = await encodeQuery(query.trim());
-                const res = await fetch(`${API_BASE}/search?q=${encoded}&page=${page}`);
-                if (!res.ok) throw new Error(`Search error ${res.status}`);
-                const data = await res.json();
-
-                const newVideos = (data && Array.isArray(data.results)) ? data.results : [];
-
-                if (newVideos.length === 0) {
-                    state.hasMore = false;
-                } else {
-                    if (append) {
-                        const existingKeys = new Set(state.videos.map(v => v.videoKey));
-                        const filteredNew = newVideos.filter(v => v.videoKey && !existingKeys.has(v.videoKey));
-                        if (filteredNew.length === 0) {
-                            state.hasMore = false;
-                        } else {
-                            state.videos = [...state.videos, ...filteredNew];
-                            state.currentPage = page;
-                        }
-                    } else {
-                        state.videos = newVideos;
-                        state.currentPage = page;
-                    }
-                }
-
-                renderView();
-            } catch (err) {
-                console.error('Error searching videos:', err);
-                if (!append) {
-                    showErrorState('Search request failed. Please try a different query.');
-                } else {
-                    showToast('Failed to load more search results.', 'error');
-                }
-            } finally {
-                showSkeletons(false);
-                state.isFetching = false;
-                if (elements.infiniteLoader) elements.infiniteLoader.classList.add('hidden');
-                checkSentinelInView();
-            }
+        function resetToHome() {
+            elements.searchInput.value = '';
+            elements.mobileSearchInput.value = '';
+            elements.clearSearchBtn.classList.add('hidden');
+            state.view = 'home';
+            loadFeed();
         }
 
         function triggerNextPageLoad() {
             if (state.isFetching || !state.hasMore || state.videos.length === 0) return;
 
-            if (state.view === 'home' || state.view === 'trending') {
-                fetchHomepage(state.currentPage + 1, true);
+            if ((state.view === 'home' || state.view === 'trending') && state.feedSource === 'home') {
+                loadFeed({ page: state.currentPage + 1, append: true });
             } else if (state.view === 'search' && state.searchQuery) {
-                searchVideos(state.searchQuery, state.currentPage + 1, true);
+                loadFeed({ query: state.searchQuery, page: state.currentPage + 1, append: true });
             }
         }
 
         function setupInfiniteScroll() {
-            const mainEl = document.querySelector('main');
-
+            // root: null = the viewport, so it works whichever element scrolls
             const observer = new IntersectionObserver((entries) => {
-                const target = entries[0];
-                if (target.isIntersecting) {
-                    triggerNextPageLoad();
-                }
-            }, {
-                root: mainEl,
-                rootMargin: '400px',
-                threshold: 0
-            });
-
-            if (elements.scrollSentinel) {
-                observer.observe(elements.scrollSentinel);
-            }
-
-            if (mainEl) {
-                mainEl.addEventListener('scroll', () => {
-                    if (mainEl.scrollTop + mainEl.clientHeight >= mainEl.scrollHeight - 500) {
-                        triggerNextPageLoad();
-                    }
-                });
-            }
+                if (entries[0].isIntersecting) triggerNextPageLoad();
+            }, { root: null, rootMargin: '600px 0px', threshold: 0 });
+            observer.observe(elements.scrollSentinel);
         }
 
+        // The observer only fires on *change*, so re-check after every load
+        // (covers tall screens where the sentinel is still visible after a page).
         function checkSentinelInView() {
-            setTimeout(() => {
-                if (!elements.scrollSentinel) return;
+            requestAnimationFrame(() => {
                 const rect = elements.scrollSentinel.getBoundingClientRect();
-                if (rect.top <= window.innerHeight + 300) {
-                    triggerNextPageLoad();
-                }
-            }, 200);
+                if (rect.top <= window.innerHeight + 600) triggerNextPageLoad();
+            });
+        }
+
+        // Append only the new cards instead of re-rendering the whole grid
+        function appendCards(fresh) {
+            if (state.sortBy !== 'default' || state.tagFilter) { renderView(); return; }
+            const tpl = document.createElement('template');
+            tpl.innerHTML = fresh.map(createVideoCardHTML).join('');
+            const nodes = [...tpl.content.children];
+            elements.videoGrid.append(...nodes);
+            attachVideoCardEvents(nodes);
+            elements.videoCountBadge.textContent = `${state.videos.length} videos`;
         }
 
         async function fetchVideoQualities(videoKey) {
@@ -1151,9 +1108,9 @@
                 <div class="video-card group glass-panel rounded-2xl overflow-hidden border border-white/5 hover:border-brand-500/40 transition-all duration-300 flex flex-col cursor-pointer glow-hover" data-key="${video.videoKey}">
                     <!-- Thumbnail Container -->
                     <div class="relative aspect-video w-full overflow-hidden bg-black/40">
-                        <img 
-                            src="${thumbnail}" 
-                            alt="${escapeHtml(video.title || '')}" 
+                        <img
+                            src="${thumbnail}"
+                            alt="${escapeHtml(video.title || '')}"
                             class="card-thumb-img w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                             loading="lazy"
                             onerror="this.onerror=null; this.src='https://placehold.co/600x400/0f1118/ffffff?text=Nexus+Stream';"
@@ -1209,21 +1166,16 @@
                 .replace(/'/g, '&#39;');
         }
 
-        function attachVideoCardEvents() {
-            document.querySelectorAll('.video-card').forEach(card => {
+        // Accepts a specific set of cards (for appended pages) or defaults to all cards
+        function attachVideoCardEvents(cards = document.querySelectorAll('.video-card')) {
+            cards.forEach(card => {
                 // Hover Events for Desktop
                 card.addEventListener('mouseenter', () => startCardPreview(card));
                 card.addEventListener('mouseleave', () => stopCardPreview());
 
                 // Touch Events for Mobile / Tablet Devices
-                card.addEventListener('touchstart', () => {
-                    startCardPreview(card);
-                }, { passive: true });
-
-                card.addEventListener('touchend', () => {
-                    setTimeout(() => stopCardPreview(), 400);
-                }, { passive: true });
-
+                card.addEventListener('touchstart', () => startCardPreview(card), { passive: true });
+                card.addEventListener('touchend', () => setTimeout(() => stopCardPreview(), 400), { passive: true });
                 card.addEventListener('touchcancel', () => stopCardPreview(), { passive: true });
 
                 // Card Click -> Open Player Modal
@@ -1232,22 +1184,22 @@
 
                     stopCardPreview();
 
-                    const videoKey = card.dataset.key;
-                    const video = state.videos.find(v => v.videoKey === videoKey) ||
-                                  state.watchlist.find(v => v.videoKey === videoKey) ||
-                                  state.history.find(v => v.videoKey === videoKey);
+                    const key = card.dataset.key;
+                    const video = state.videos.find(v => v.videoKey === key) ||
+                                  state.watchlist.find(v => v.videoKey === key) ||
+                                  state.history.find(v => v.videoKey === key);
 
                     if (video) openPlayerModal(video);
                 });
-            });
 
-            // Card Bookmark Button Click
-            document.querySelectorAll('.card-bookmark-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const videoKey = btn.dataset.key;
-                    toggleWatchlist(videoKey);
-                });
+                // Card Bookmark Button Click
+                const bm = card.querySelector('.card-bookmark-btn');
+                if (bm) {
+                    bm.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleWatchlist(bm.dataset.key);
+                    });
+                }
             });
         }
 
@@ -1499,11 +1451,9 @@
                 updateNavActiveState();
 
                 if (targetView === 'home' || targetView === 'trending') {
-                    if (state.videos.length === 0) {
-                        fetchHomepage();
-                    } else {
-                        renderView();
-                    }
+                    // don't show leftover search results under Home / Trending
+                    if (state.feedSource !== 'home' || state.videos.length === 0) loadFeed();
+                    else renderView();
                 } else {
                     renderView();
                 }
@@ -1551,49 +1501,26 @@
         // Search Inputs (Debounced)
         function handleSearchInput(e) {
             const val = e.target.value;
-            if (val) {
-                elements.clearSearchBtn.classList.remove('hidden');
-            } else {
-                elements.clearSearchBtn.classList.add('hidden');
-            }
+            // keep both inputs in sync
+            elements.searchInput.value = val;
+            elements.mobileSearchInput.value = val;
+            elements.clearSearchBtn.classList.toggle('hidden', !val);
 
             clearTimeout(state.searchTimeout);
             state.searchTimeout = setTimeout(() => {
-                searchVideos(val);
-            }, 600);
+                const q = val.trim();
+                if (q) loadFeed({ query: q });
+                else resetToHome();
+            }, 500);
         }
 
         elements.searchInput.addEventListener('input', handleSearchInput);
         elements.mobileSearchInput.addEventListener('input', handleSearchInput);
 
-        // Clear Search
-        elements.clearSearchBtn.addEventListener('click', () => {
-            elements.searchInput.value = '';
-            elements.mobileSearchInput.value = '';
-            elements.clearSearchBtn.classList.add('hidden');
-            state.view = 'home';
-            updateNavActiveState();
-            renderView();
-        });
-
-        elements.resetSearchBtn.addEventListener('click', () => {
-            elements.searchInput.value = '';
-            elements.mobileSearchInput.value = '';
-            elements.clearSearchBtn.classList.add('hidden');
-            state.view = 'home';
-            updateNavActiveState();
-            renderView();
-        });
-
-        if (elements.emptyResetBtn) {
-            elements.emptyResetBtn.addEventListener('click', () => {
-                state.view = 'home';
-                state.searchQuery = '';
-                elements.searchInput.value = '';
-                updateNavActiveState();
-                fetchHomepage(1, false);
-            });
-        }
+        // Clear / Reset Search
+        elements.clearSearchBtn.addEventListener('click', resetToHome);
+        elements.resetSearchBtn.addEventListener('click', resetToHome);
+        if (elements.emptyResetBtn) elements.emptyResetBtn.addEventListener('click', resetToHome);
 
         // Spotlight Hero Play & Save Buttons
         elements.heroPlayBtn.addEventListener('click', () => {
@@ -1709,18 +1636,20 @@
             }
         });
 
+        // Retry button: retry whichever feed was active
         if (elements.retryApiBtn) {
             elements.retryApiBtn.addEventListener('click', () => {
-                fetchHomepage(1, false);
+                if (state.view === 'search' && state.searchQuery) loadFeed({ query: state.searchQuery });
+                else loadFeed();
             });
         }
 
         // INITIALIZATION
-        window.addEventListener('DOMContentLoaded', async () => {
+        window.addEventListener('DOMContentLoaded', () => {
             updateCounters();
             setupInfiniteScroll();
-            await checkApiHealth();
-            fetchHomepage(1, false);
+            checkApiHealth(); // don't block the first load on the health check
+            loadFeed();
         });
     </script>
 </body>
