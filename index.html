@@ -176,10 +176,10 @@
                 <div class="absolute left-4 text-gray-400 pointer-events-none">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </div>
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     id="searchInput"
-                    placeholder="Search thousands of videos, creators, streams... (Press '/' to focus)" 
+                    placeholder="Search thousands of videos, creators, streams... (Press '/' to focus)"
                     class="w-full bg-card/80 border border-white/10 rounded-2xl pl-11 pr-24 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/20 transition-all shadow-inner"
                 >
                 <div class="absolute right-3 flex items-center space-x-2">
@@ -221,10 +221,10 @@
     <!-- MOBILE SEARCH BAR OVERLAY -->
     <div id="mobileSearchOverlay" class="hidden md:hidden p-4 glass-nav border-b border-white/10 space-y-2">
         <div class="relative flex items-center">
-            <input 
-                type="text" 
+            <input
+                type="text"
                 id="mobileSearchInput"
-                placeholder="Search videos..." 
+                placeholder="Search videos..."
                 class="w-full bg-card border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-brand-500"
             >
             <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-400"></i>
@@ -298,7 +298,7 @@
             <section id="heroBanner" class="relative rounded-3xl overflow-hidden glass-panel border border-white/10 p-6 md:p-10 transition-all duration-500 hidden">
                 <div class="absolute inset-0 bg-gradient-to-r from-oled via-oled/80 to-transparent z-10"></div>
                 <img id="heroImage" src="" alt="Spotlight" class="absolute inset-0 w-full h-full object-cover opacity-30 filter blur-sm">
-                
+
                 <div class="relative z-20 max-w-2xl space-y-4">
                     <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/20 border border-brand-500/40 text-brand-400 text-xs font-semibold uppercase tracking-wider">
                         <i class="fa-solid fa-fire animate-pulse"></i>
@@ -438,7 +438,7 @@
 
     <!-- VIDEO PLAYER MODAL / THEATER OVERLAY -->
     <div id="playerModal" class="fixed inset-0 z-50 glass-modal flex flex-col hidden overflow-y-auto transition-opacity duration-300">
-        
+
         <!-- Player Modal Header Bar -->
         <div class="sticky top-0 z-10 glass-nav px-4 lg:px-8 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3 overflow-hidden">
@@ -463,10 +463,10 @@
 
         <!-- Player Body Layout -->
         <div class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
+
             <!-- Left & Main: Video Frame & Metadata (Cols 2) -->
             <div id="playerContainerCol" class="lg:col-span-2 space-y-6">
-                
+
                 <!-- Video Player Container Box -->
                 <div class="relative bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
                     <div class="video-container">
@@ -529,7 +529,7 @@
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-base font-bold text-white flex items-center space-x-2">
-                        <i class="fa-solid fa-[#f43f5e] fa-bars-staggered text-brand-500"></i>
+                        <i class="fa-solid fa-bars-staggered text-brand-500"></i>
                         <span>Up Next / Recommendations</span>
                     </h3>
                     <span class="text-xs text-gray-500 font-mono">AUTOPLAY</span>
@@ -628,66 +628,70 @@
             mobileSearchOverlay: document.getElementById('mobileSearchOverlay'),
             closeMobileSearch: document.getElementById('closeMobileSearch'),
             retryApiBtn: document.getElementById('retryApiBtn'),
+            emptyResetBtn: document.getElementById('emptyResetBtn'),
             apiStatusBadge: document.getElementById('apiStatusBadge'),
             statusText: document.getElementById('statusText'),
             toastContainer: document.getElementById('toastContainer'),
             infiniteLoader: document.getElementById('infiniteLoader'),
-            scrollSentinel: document.getElementById('scrollSentinel')
+            scrollSentinel: document.getElementById('scrollSentinel'),
+            navWatchlistBtn: document.getElementById('navWatchlistBtn'),
+            navHistoryBtn: document.getElementById('navHistoryBtn')
         };
 
-        // DOM Element Cache
-        const elements = {
-            videoGrid: document.getElementById('videoGrid'),
-            skeletonGrid: document.getElementById('skeletonGrid'),
-            emptyState: document.getElementById('emptyState'),
-            errorState: document.getElementById('errorState'),
-            heroBanner: document.getElementById('heroBanner'),
-            heroImage: document.getElementById('heroImage'),
-            heroTitle: document.getElementById('heroTitle'),
-            heroAuthor: document.getElementById('heroAuthor'),
-            heroViews: document.getElementById('heroViews'),
-            heroRuntime: document.getElementById('heroRuntime'),
-            heroPlayBtn: document.getElementById('heroPlayBtn'),
-            heroSaveBtn: document.getElementById('heroSaveBtn'),
-            searchInput: document.getElementById('searchInput'),
-            mobileSearchInput: document.getElementById('mobileSearchInput'),
-            clearSearchBtn: document.getElementById('clearSearchBtn'),
-            searchBanner: document.getElementById('searchBanner'),
-            searchQueryText: document.getElementById('searchQueryText'),
-            resetSearchBtn: document.getElementById('resetSearchBtn'),
-            viewHeading: document.getElementById('viewHeading'),
-            videoCountBadge: document.getElementById('videoCountBadge'),
-            watchlistCount: document.getElementById('watchlistCount'),
-            historyCount: document.getElementById('historyCount'),
-            playerModal: document.getElementById('playerModal'),
-            mainVideoPlayer: document.getElementById('mainVideoPlayer'),
-            playerVideoTitle: document.getElementById('playerVideoTitle'),
-            playerModalTitle: document.getElementById('playerModalTitle'),
-            playerAuthorText: document.getElementById('playerAuthorText'),
-            playerViews: document.getElementById('playerViews'),
-            playerKeyBadge: document.getElementById('playerKeyBadge'),
-            qualityMenuBtn: document.getElementById('qualityMenuBtn'),
-            qualityDropdown: document.getElementById('qualityDropdown'),
-            qualityListContainer: document.getElementById('qualityListContainer'),
-            currentQualityLabel: document.getElementById('currentQualityLabel'),
-            relatedVideosQueue: document.getElementById('relatedVideosQueue'),
-            modalSaveBtn: document.getElementById('modalSaveBtn'),
-            modalSaveText: document.getElementById('modalSaveText'),
-            modalShareBtn: document.getElementById('modalShareBtn'),
-            closePlayerModalBtn: document.getElementById('closePlayerModalBtn'),
-            cinemaToggleBtn: document.getElementById('cinemaToggleBtn'),
-            playerContainerCol: document.getElementById('playerContainerCol'),
-            sidebar: document.getElementById('sidebar'),
-            sidebarBackdrop: document.getElementById('sidebarBackdrop'),
-            mobileMenuBtn: document.getElementById('mobileMenuBtn'),
-            mobileSearchToggle: document.getElementById('mobileSearchToggle'),
-            mobileSearchOverlay: document.getElementById('mobileSearchOverlay'),
-            closeMobileSearch: document.getElementById('closeMobileSearch'),
-            retryApiBtn: document.getElementById('retryApiBtn'),
-            apiStatusBadge: document.getElementById('apiStatusBadge'),
-            statusText: document.getElementById('statusText'),
-            toastContainer: document.getElementById('toastContainer')
-        };
+        // Helper Utilities
+        function formatViews(views) {
+            if (!views || isNaN(views)) return '0 views';
+            const num = Number(views);
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M views';
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K views';
+            return num + ' views';
+        }
+
+        function updateCounters() {
+            if (elements.watchlistCount) elements.watchlistCount.textContent = state.watchlist.length;
+            if (elements.historyCount) elements.historyCount.textContent = state.history.length;
+        }
+
+        function syncLocalStorage() {
+            localStorage.setItem(STORAGE_WATCHLIST, JSON.stringify(state.watchlist));
+            localStorage.setItem(STORAGE_HISTORY, JSON.stringify(state.history));
+            updateCounters();
+        }
+
+        async function checkApiHealth() {
+            try {
+                const res = await fetch(`${API_BASE}/health`);
+                if (res.ok && elements.statusText) {
+                    elements.statusText.textContent = 'CONNECTED';
+                    elements.apiStatusBadge.className = 'hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium';
+                }
+            } catch (e) {
+                if (elements.statusText) {
+                    elements.statusText.textContent = 'OFFLINE';
+                    elements.apiStatusBadge.className = 'hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-medium';
+                }
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            if (!elements.toastContainer) return;
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-500/90 border-emerald-400' :
+                            type === 'error' ? 'bg-rose-500/90 border-rose-400' : 'bg-brand-500/90 border-brand-400';
+            toast.className = `px-4 py-3 rounded-2xl text-white text-xs font-semibold border backdrop-blur-md shadow-2xl flex items-center space-x-2 transition-all transform translate-y-4 opacity-0 pointer-events-auto ${bgClass}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-xmark' : 'fa-circle-info'}"></i><span>${escapeHtml(message)}</span>`;
+
+            elements.toastContainer.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
         // Utility: URL-safe Base64 Encoder with Compression Fallback
         async function encodeQuery(text) {
@@ -711,6 +715,10 @@
             let binary = '';
             for (let i = 0; i < utf8Bytes.length; i++) {
                 binary += String.fromCharCode(utf8Bytes[i]);
+            }
+            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
         async function fetchHomepage(page = 1, append = false) {
             if (state.isLoadingMore) return;
 
@@ -721,15 +729,15 @@
                 showSkeletons(true);
             } else {
                 state.isLoadingMore = true;
-                elements.infiniteLoader.classList.remove('hidden');
+                if (elements.infiniteLoader) elements.infiniteLoader.classList.remove('hidden');
             }
 
             hideErrors();
             try {
-                const res = await fetch(`${API_BASE}/homepage?page=${page}`);
+                const res = await fetch(`${API_BASE}/get_homepage?page=${page}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
-                
+
                 const newVideos = (data && Array.isArray(data.results)) ? data.results : [];
 
                 if (newVideos.length === 0) {
@@ -754,7 +762,7 @@
             } finally {
                 showSkeletons(false);
                 state.isLoadingMore = false;
-                elements.infiniteLoader.classList.add('hidden');
+                if (elements.infiniteLoader) elements.infiniteLoader.classList.add('hidden');
             }
         }
 
@@ -773,7 +781,7 @@
                 showSkeletons(true);
             } else {
                 state.isLoadingMore = true;
-                elements.infiniteLoader.classList.remove('hidden');
+                if (elements.infiniteLoader) elements.infiniteLoader.classList.remove('hidden');
             }
 
             hideErrors();
@@ -811,7 +819,7 @@
             } finally {
                 showSkeletons(false);
                 state.isLoadingMore = false;
-                elements.infiniteLoader.classList.add('hidden');
+                if (elements.infiniteLoader) elements.infiniteLoader.classList.add('hidden');
             }
         }
 
@@ -963,7 +971,7 @@
 
             // Render Video Cards Grid
             elements.videoGrid.innerHTML = list.map(video => createVideoCardHTML(video)).join('');
-            
+
             // Attach Card Click Handlers
             attachVideoCardEvents();
         }
@@ -991,9 +999,9 @@
                 <div class="video-card group glass-panel rounded-2xl overflow-hidden border border-white/5 hover:border-brand-500/40 transition-all duration-300 flex flex-col cursor-pointer glow-hover" data-key="${video.videoKey}">
                     <!-- Thumbnail Container -->
                     <div class="relative aspect-video w-full overflow-hidden bg-black/40">
-                        <img 
-                            src="${thumbnail}" 
-                            alt="${escapeHtml(video.title || '')}" 
+                        <img
+                            src="${thumbnail}"
+                            alt="${escapeHtml(video.title || '')}"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             loading="lazy"
                             onerror="this.onerror=null; this.src='https://placehold.co/600x400/0f1118/ffffff?text=Nexus+Stream';"
@@ -1049,12 +1057,12 @@
                 card.addEventListener('click', (e) => {
                     // Ignore if clicked directly on bookmark button
                     if (e.target.closest('.card-bookmark-btn')) return;
-                    
+
                     const videoKey = card.dataset.key;
                     const video = state.videos.find(v => v.videoKey === videoKey) ||
                                   state.watchlist.find(v => v.videoKey === videoKey) ||
                                   state.history.find(v => v.videoKey === videoKey);
-                    
+
                     if (video) openPlayerModal(video);
                 });
             });
@@ -1096,7 +1104,6 @@
 
         function addToHistory(video) {
             if (!video) return;
-            // Remove duplicate if exists
             state.history = state.history.filter(v => v.videoKey !== video.videoKey);
             state.history.unshift({
                 ...video,
@@ -1151,10 +1158,6 @@
             }
         }
 
-        function renderModalSaveButton() {
-            updateModalSaveButton();
-        }
-
         function updateModalSaveButton() {
             if (!state.activeVideo) return;
             const isSaved = state.watchlist.some(v => v.videoKey === state.activeVideo.videoKey);
@@ -1188,7 +1191,7 @@
             if (!state.qualities[index]) return;
             state.currentQualityIndex = index;
             const item = state.qualities[index];
-            
+
             elements.currentQualityLabel.textContent = item.quality ? `${item.quality}p HD` : 'High Res';
             renderQualityMenu();
 
@@ -1206,8 +1209,6 @@
             const blobUrl = URL.createObjectURL(blob);
 
             const videoEl = elements.mainVideoPlayer;
-
-            // Preserve current time if user changed resolution during playback
             const currentTime = videoEl.currentTime || 0;
 
             if (Hls.isSupported()) {
@@ -1248,7 +1249,6 @@
                 });
 
             } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
-                // Native Safari / iOS HLS Support
                 videoEl.src = blobUrl;
                 videoEl.addEventListener('loadedmetadata', () => {
                     if (currentTime > 0) videoEl.currentTime = currentTime;
@@ -1262,7 +1262,7 @@
         function closePlayerModal() {
             elements.playerModal.classList.add('hidden');
             document.body.style.overflow = '';
-            
+
             if (elements.mainVideoPlayer) {
                 elements.mainVideoPlayer.pause();
                 elements.mainVideoPlayer.removeAttribute('src');
@@ -1279,7 +1279,7 @@
 
         function renderRelatedQueue(currentVideo) {
             const queueList = state.videos.filter(v => v.videoKey !== currentVideo.videoKey).slice(0, 8);
-            
+
             if (queueList.length === 0) {
                 elements.relatedVideosQueue.innerHTML = '<p class="text-xs text-gray-500 italic p-2">No other videos in current queue.</p>';
                 return;
@@ -1328,9 +1328,9 @@
                 elements.searchInput.value = '';
                 elements.mobileSearchInput.value = '';
                 elements.clearSearchBtn.classList.add('hidden');
-                
+
                 updateNavActiveState();
-                
+
                 if (targetView === 'home' || targetView === 'trending') {
                     if (state.videos.length === 0) {
                         fetchHomepage();
@@ -1341,7 +1341,6 @@
                     renderView();
                 }
 
-                // Close Mobile Sidebar if open
                 closeMobileSidebar();
             });
         });
@@ -1419,13 +1418,15 @@
             renderView();
         });
 
-        elements.emptyResetBtn.addEventListener('click', () => {
-            state.view = 'home';
-            state.searchQuery = '';
-            elements.searchInput.value = '';
-            updateNavActiveState();
-            fetchHomepage(1, false);
-        });
+        if (elements.emptyResetBtn) {
+            elements.emptyResetBtn.addEventListener('click', () => {
+                state.view = 'home';
+                state.searchQuery = '';
+                elements.searchInput.value = '';
+                updateNavActiveState();
+                fetchHomepage(1, false);
+            });
+        }
 
         // Spotlight Hero Play & Save Buttons
         elements.heroPlayBtn.addEventListener('click', () => {
@@ -1461,8 +1462,7 @@
         elements.modalShareBtn.addEventListener('click', () => {
             if (!state.activeVideo) return;
             const shareUrl = `${window.location.origin}${window.location.pathname}?v=${state.activeVideo.videoKey}`;
-            
-            // Clipboard Copy
+
             const dummy = document.createElement('input');
             document.body.appendChild(dummy);
             dummy.value = shareUrl;
@@ -1513,36 +1513,40 @@
         });
 
         // Header Nav Quick Counters Buttons
-        elements.navWatchlistBtn.addEventListener('click', () => {
-            state.view = 'watchlist';
-            updateNavActiveState();
-            renderView();
-        });
+        if (elements.navWatchlistBtn) {
+            elements.navWatchlistBtn.addEventListener('click', () => {
+                state.view = 'watchlist';
+                updateNavActiveState();
+                renderView();
+            });
+        }
 
-        elements.navHistoryBtn.addEventListener('click', () => {
-            state.view = 'history';
-            updateNavActiveState();
-            renderView();
-        });
+        if (elements.navHistoryBtn) {
+            elements.navHistoryBtn.addEventListener('click', () => {
+                state.view = 'history';
+                updateNavActiveState();
+                renderView();
+            });
+        }
 
         // Global Keyboard Shortcuts
         document.addEventListener('keydown', (e) => {
-            // Esc key closes modal
             if (e.key === 'Escape') {
                 if (!elements.playerModal.classList.contains('hidden')) {
                     closePlayerModal();
                 }
             }
-            // '/' key focuses search bar
             if (e.key === '/' && document.activeElement !== elements.searchInput && document.activeElement !== elements.mobileSearchInput) {
                 e.preventDefault();
                 elements.searchInput.focus();
             }
         });
 
-        elements.retryApiBtn.addEventListener('click', () => {
-            fetchHomepage(1, false);
-        });
+        if (elements.retryApiBtn) {
+            elements.retryApiBtn.addEventListener('click', () => {
+                fetchHomepage(1, false);
+            });
+        }
 
         // INITIALIZATION
         window.addEventListener('DOMContentLoaded', async () => {
