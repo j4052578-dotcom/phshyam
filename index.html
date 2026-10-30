@@ -558,6 +558,14 @@
         const STORAGE_WATCHLIST = 'nexus_play_watchlist_v1';
         const STORAGE_HISTORY = 'nexus_play_history_v1';
 
+        // Stream Quality In-Memory Cache
+        const qualityCache = {};
+
+        // Active Card Hover Preview State
+        let activePreviewCard = null;
+        let activePreviewHls = null;
+        let previewHoverTimer = null;
+
         // Global State Store
         const state = {
             view: 'home', // 'home' | 'trending' | 'watchlist' | 'history' | 'search'
@@ -575,7 +583,7 @@
             isCinemaMode: false,
             hlsInstance: null,
             currentPage: 1,
-            isLoadingMore: false,
+            isFetching: false,
             hasMore: true
         };
 
@@ -720,7 +728,8 @@
         }
 
         async function fetchHomepage(page = 1, append = false) {
-            if (state.isLoadingMore) return;
+            if (state.isFetching) return;
+            state.isFetching = true;
 
             if (!append) {
                 state.currentPage = 1;
@@ -728,7 +737,6 @@
                 state.videos = [];
                 showSkeletons(true);
             } else {
-                state.isLoadingMore = true;
                 if (elements.infiniteLoader) elements.infiniteLoader.classList.remove('hidden');
             }
 
@@ -744,11 +752,18 @@
                     state.hasMore = false;
                 } else {
                     if (append) {
-                        state.videos = [...state.videos, ...newVideos];
+                        const existingKeys = new Set(state.videos.map(v => v.videoKey));
+                        const filteredNew = newVideos.filter(v => v.videoKey && !existingKeys.has(v.videoKey));
+                        if (filteredNew.length === 0) {
+                            state.hasMore = false;
+                        } else {
+                            state.videos = [...state.videos, ...filteredNew];
+                            state.currentPage = page;
+                        }
                     } else {
                         state.videos = newVideos;
+                        state.currentPage = page;
                     }
-                    state.currentPage = page;
                 }
 
                 renderView();
@@ -761,8 +776,9 @@
                 }
             } finally {
                 showSkeletons(false);
-                state.isLoadingMore = false;
+                state.isFetching = false;
                 if (elements.infiniteLoader) elements.infiniteLoader.classList.add('hidden');
+                checkSentinelInView();
             }
         }
 
@@ -772,7 +788,8 @@
                 return;
             }
 
-            if (state.isLoadingMore) return;
+            if (state.isFetching) return;
+            state.isFetching = true;
 
             if (!append) {
                 state.currentPage = 1;
@@ -780,7 +797,6 @@
                 state.videos = [];
                 showSkeletons(true);
             } else {
-                state.isLoadingMore = true;
                 if (elements.infiniteLoader) elements.infiniteLoader.classList.remove('hidden');
             }
 
@@ -801,11 +817,18 @@
                     state.hasMore = false;
                 } else {
                     if (append) {
-                        state.videos = [...state.videos, ...newVideos];
+                        const existingKeys = new Set(state.videos.map(v => v.videoKey));
+                        const filteredNew = newVideos.filter(v => v.videoKey && !existingKeys.has(v.videoKey));
+                        if (filteredNew.length === 0) {
+                            state.hasMore = false;
+                        } else {
+                            state.videos = [...state.videos, ...filteredNew];
+                            state.currentPage = page;
+                        }
                     } else {
                         state.videos = newVideos;
+                        state.currentPage = page;
                     }
-                    state.currentPage = page;
                 }
 
                 renderView();
@@ -818,44 +841,182 @@
                 }
             } finally {
                 showSkeletons(false);
-                state.isLoadingMore = false;
+                state.isFetching = false;
                 if (elements.infiniteLoader) elements.infiniteLoader.classList.add('hidden');
+                checkSentinelInView();
+            }
+        }
+
+        function triggerNextPageLoad() {
+            if (state.isFetching || !state.hasMore || state.videos.length === 0) return;
+
+            if (state.view === 'home' || state.view === 'trending') {
+                fetchHomepage(state.currentPage + 1, true);
+            } else if (state.view === 'search' && state.searchQuery) {
+                searchVideos(state.searchQuery, state.currentPage + 1, true);
             }
         }
 
         function setupInfiniteScroll() {
+            const mainEl = document.querySelector('main');
+
             const observer = new IntersectionObserver((entries) => {
                 const target = entries[0];
-                if (target.isIntersecting && !state.isLoadingMore && state.hasMore) {
-                    if (state.view === 'home' || state.view === 'trending') {
-                        fetchHomepage(state.currentPage + 1, true);
-                    } else if (state.view === 'search' && state.searchQuery) {
-                        searchVideos(state.searchQuery, state.currentPage + 1, true);
-                    }
+                if (target.isIntersecting) {
+                    triggerNextPageLoad();
                 }
             }, {
-                root: document.querySelector('main'),
-                rootMargin: '300px',
-                threshold: 0.1
+                root: mainEl,
+                rootMargin: '400px',
+                threshold: 0
             });
 
             if (elements.scrollSentinel) {
                 observer.observe(elements.scrollSentinel);
             }
+
+            if (mainEl) {
+                mainEl.addEventListener('scroll', () => {
+                    if (mainEl.scrollTop + mainEl.clientHeight >= mainEl.scrollHeight - 500) {
+                        triggerNextPageLoad();
+                    }
+                });
+            }
+        }
+
+        function checkSentinelInView() {
+            setTimeout(() => {
+                if (!elements.scrollSentinel) return;
+                const rect = elements.scrollSentinel.getBoundingClientRect();
+                if (rect.top <= window.innerHeight + 300) {
+                    triggerNextPageLoad();
+                }
+            }, 200);
         }
 
         async function fetchVideoQualities(videoKey) {
+            if (qualityCache[videoKey]) {
+                return qualityCache[videoKey];
+            }
             try {
                 const res = await fetch(`${API_BASE}/full_qual?videoKey=${videoKey}`);
                 if (!res.ok) throw new Error(`Qualities error HTTP ${res.status}`);
                 const data = await res.json();
                 if (data && Array.isArray(data.results) && data.results.length > 0) {
+                    qualityCache[videoKey] = data.results;
                     return data.results;
                 }
             } catch (err) {
                 console.error('Failed to load video streams:', err);
             }
             return null;
+        }
+
+        // HOVER TO PLAY VIDEO PREVIEW ENGINE
+        function startCardPreview(card) {
+            const videoKey = card.dataset.key;
+            if (!videoKey) return;
+
+            // Stop any existing active card preview
+            stopCardPreview();
+
+            activePreviewCard = card;
+
+            previewHoverTimer = setTimeout(async () => {
+                if (activePreviewCard !== card) return;
+
+                const videoEl = card.querySelector('.card-preview-video');
+                const imgEl = card.querySelector('.card-thumb-img');
+                const loaderEl = card.querySelector('.card-preview-loader');
+                const badgeEl = card.querySelector('.preview-badge');
+
+                if (!videoEl) return;
+
+                if (loaderEl) loaderEl.classList.remove('hidden');
+
+                const qualities = await fetchVideoQualities(videoKey);
+
+                if (loaderEl) loaderEl.classList.add('hidden');
+
+                if (activePreviewCard !== card) return;
+
+                if (!qualities || qualities.length === 0) return;
+
+                // Select lowest quality available (index 0)
+                const lowestQual = qualities[0];
+                if (!lowestQual || !lowestQual.streamable_m3u8) return;
+
+                const blob = new Blob([lowestQual.streamable_m3u8], { type: 'application/x-mpegURL' });
+                const blobUrl = URL.createObjectURL(blob);
+
+                videoEl.muted = true;
+                videoEl.playsInline = true;
+
+                if (Hls.isSupported()) {
+                    if (activePreviewHls) {
+                        activePreviewHls.destroy();
+                    }
+                    const hls = new Hls({
+                        enableWorker: true,
+                        lowLatencyMode: true,
+                        capLevelToPlayerSize: true
+                    });
+                    activePreviewHls = hls;
+                    hls.loadSource(blobUrl);
+                    hls.attachMedia(videoEl);
+
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        if (activePreviewCard !== card) return;
+                        videoEl.playbackRate = 2.0;
+                        videoEl.play().then(() => {
+                            videoEl.playbackRate = 2.0;
+                            if (imgEl) imgEl.classList.add('opacity-0');
+                            videoEl.classList.remove('hidden');
+                            if (badgeEl) badgeEl.classList.remove('hidden');
+                        }).catch(e => console.log('Preview playback blocked:', e));
+                    });
+                } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+                    videoEl.src = blobUrl;
+                    videoEl.playbackRate = 2.0;
+                    videoEl.play().then(() => {
+                        videoEl.playbackRate = 2.0;
+                        if (imgEl) imgEl.classList.add('opacity-0');
+                        videoEl.classList.remove('hidden');
+                        if (badgeEl) badgeEl.classList.remove('hidden');
+                    }).catch(e => console.log('Preview playback blocked:', e));
+                }
+            }, 180); // 180ms hover threshold
+        }
+
+        function stopCardPreview() {
+            clearTimeout(previewHoverTimer);
+            previewHoverTimer = null;
+
+            if (activePreviewCard) {
+                const videoEl = activePreviewCard.querySelector('.card-preview-video');
+                const imgEl = activePreviewCard.querySelector('.card-thumb-img');
+                const loaderEl = activePreviewCard.querySelector('.card-preview-loader');
+                const badgeEl = activePreviewCard.querySelector('.preview-badge');
+
+                if (loaderEl) loaderEl.classList.add('hidden');
+                if (badgeEl) badgeEl.classList.add('hidden');
+
+                if (videoEl) {
+                    videoEl.pause();
+                    videoEl.classList.add('hidden');
+                    videoEl.removeAttribute('src');
+                    videoEl.load();
+                }
+                if (imgEl) {
+                    imgEl.classList.remove('opacity-0');
+                }
+                activePreviewCard = null;
+            }
+
+            if (activePreviewHls) {
+                activePreviewHls.destroy();
+                activePreviewHls = null;
+            }
         }
 
         // View State Renderers
@@ -886,14 +1047,12 @@
         function filterAndSortVideos() {
             let list = [...state.videos];
 
-            // Apply view specific filters
             if (state.view === 'watchlist') {
                 list = [...state.watchlist];
             } else if (state.view === 'history') {
                 list = [...state.history];
             }
 
-            // Apply Tag Filter
             if (state.tagFilter) {
                 const tag = state.tagFilter.toLowerCase();
                 list = list.filter(v => {
@@ -906,7 +1065,6 @@
                 });
             }
 
-            // Apply Sorting
             if (state.sortBy === 'views') {
                 list.sort((a, b) => (b.views || 0) - (a.views || 0));
             } else if (state.sortBy === 'title') {
@@ -919,7 +1077,6 @@
         function renderView() {
             const list = filterAndSortVideos();
 
-            // Update Headings & UI Context
             if (state.view === 'home') {
                 elements.viewHeading.innerHTML = `<i class="fa-solid fa-compass text-brand-500"></i><span>Explore Feed</span>`;
                 elements.searchBanner.classList.add('hidden');
@@ -940,14 +1097,12 @@
 
             elements.videoCountBadge.textContent = `${list.length} videos`;
 
-            // Spotlight Banner logic (only on home or trending with items available)
             if ((state.view === 'home' || state.view === 'trending') && list.length > 0) {
                 setupSpotlightBanner(list[0]);
             } else {
                 elements.heroBanner.classList.add('hidden');
             }
 
-            // Empty state check
             if (list.length === 0) {
                 elements.videoGrid.innerHTML = '';
                 elements.emptyState.classList.remove('hidden');
@@ -969,10 +1124,8 @@
             elements.emptyState.classList.add('hidden');
             elements.emptyState.classList.remove('flex');
 
-            // Render Video Cards Grid
             elements.videoGrid.innerHTML = list.map(video => createVideoCardHTML(video)).join('');
 
-            // Attach Card Click Handlers
             attachVideoCardEvents();
         }
 
@@ -1002,20 +1155,26 @@
                         <img
                             src="${thumbnail}"
                             alt="${escapeHtml(video.title || '')}"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            class="card-thumb-img w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                             loading="lazy"
                             onerror="this.onerror=null; this.src='https://placehold.co/600x400/0f1118/ffffff?text=Nexus+Stream';"
                         >
-                        <!-- Runtime Overlay Badge -->
-                        <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded-lg bg-black/80 backdrop-blur-md text-white font-mono text-[11px] font-semibold border border-white/10 shadow-lg">
-                            ${video.runtime || 'HD'}
+                        <video class="card-preview-video absolute inset-0 w-full h-full object-cover hidden" muted playsinline loop></video>
+
+                        <!-- Preview Loading Spinner Overlay -->
+                        <div class="card-preview-loader hidden absolute inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-[5]">
+                            <div class="w-6 h-6 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin"></div>
                         </div>
 
-                        <!-- Hover Play Glow Icon -->
-                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <div class="w-12 h-12 rounded-full bg-brand-500/90 text-white flex items-center justify-center shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
-                                <i class="fa-solid fa-play text-lg ml-0.5"></i>
-                            </div>
+                        <!-- 2x Preview Badge Indicator -->
+                        <div class="preview-badge hidden absolute top-2 left-2 px-2 py-0.5 rounded-md bg-brand-500/90 text-white font-mono text-[10px] font-extrabold shadow-lg z-10 flex items-center space-x-1 animate-pulse">
+                            <i class="fa-solid fa-bolt text-[9px]"></i>
+                            <span>2x PREVIEW</span>
+                        </div>
+
+                        <!-- Runtime Overlay Badge -->
+                        <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded-lg bg-black/80 backdrop-blur-md text-white font-mono text-[11px] font-semibold border border-white/10 shadow-lg z-10">
+                            ${video.runtime || 'HD'}
                         </div>
 
                         <!-- Quick Bookmark Button -->
@@ -1052,11 +1211,27 @@
         }
 
         function attachVideoCardEvents() {
-            // Card click -> Open player
             document.querySelectorAll('.video-card').forEach(card => {
+                // Hover Events for Desktop
+                card.addEventListener('mouseenter', () => startCardPreview(card));
+                card.addEventListener('mouseleave', () => stopCardPreview());
+
+                // Touch Events for Mobile / Tablet Devices
+                card.addEventListener('touchstart', () => {
+                    startCardPreview(card);
+                }, { passive: true });
+
+                card.addEventListener('touchend', () => {
+                    setTimeout(() => stopCardPreview(), 400);
+                }, { passive: true });
+
+                card.addEventListener('touchcancel', () => stopCardPreview(), { passive: true });
+
+                // Card Click -> Open Player Modal
                 card.addEventListener('click', (e) => {
-                    // Ignore if clicked directly on bookmark button
                     if (e.target.closest('.card-bookmark-btn')) return;
+
+                    stopCardPreview();
 
                     const videoKey = card.dataset.key;
                     const video = state.videos.find(v => v.videoKey === videoKey) ||
@@ -1067,7 +1242,7 @@
                 });
             });
 
-            // Card Bookmark click
+            // Card Bookmark Button Click
             document.querySelectorAll('.card-bookmark-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1117,7 +1292,6 @@
             state.activeVideo = video;
             addToHistory(video);
 
-            // Populate Modal Text Meta
             elements.playerVideoTitle.textContent = video.title || 'Untitled Stream';
             elements.playerModalTitle.textContent = video.title || 'Untitled Stream';
             elements.playerAuthorText.textContent = video.author || 'Creator';
@@ -1125,15 +1299,11 @@
             elements.playerKeyBadge.textContent = `Key: ${video.videoKey || 'N/A'}`;
 
             updateModalSaveButton();
-
-            // Populate Recommendation Queue
             renderRelatedQueue(video);
 
-            // Show Modal UI
             elements.playerModal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
 
-            // Reset Player
             if (elements.mainVideoPlayer) {
                 elements.mainVideoPlayer.pause();
                 elements.mainVideoPlayer.removeAttribute('src');
@@ -1143,13 +1313,12 @@
             elements.currentQualityLabel.textContent = 'Fetching Stream...';
             elements.qualityListContainer.innerHTML = '<div class="px-3 py-2 text-xs text-gray-400 font-mono">Loading qualities...</div>';
 
-            // Fetch Qualities from worker endpoint: GET /full_qual?videoKey=<key>
             const qualities = await fetchVideoQualities(video.videoKey);
 
             if (qualities && qualities.length > 0) {
                 state.qualities = qualities;
                 renderQualityMenu();
-                // Select Highest Quality by default
+                // Select Highest Quality for Main Player
                 selectQuality(qualities.length - 1);
             } else {
                 elements.currentQualityLabel.textContent = 'Stream Unavailable';
@@ -1204,7 +1373,6 @@
                 return;
             }
 
-            // Create Blob URL for streamable_m3u8 text
             const blob = new Blob([m3u8Text], { type: 'application/x-mpegURL' });
             const blobUrl = URL.createObjectURL(blob);
 
